@@ -1,28 +1,25 @@
 package com.mbf.wearable.jordanprayertimes.presentation
 
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.mbf.wearable.jordanprayertimes.data.ui.CityUiModel
 import com.mbf.wearable.jordanprayertimes.data.ui.InitialHomeScreenData
-import com.mbf.wearable.jordanprayertimes.repositories.LoadCitiesRepo
 import com.mbf.wearable.jordanprayertimes.repositories.impl.LoadCitiesRepoImp
+import com.mbf.wearable.jordanprayertimes.repositories.impl.LoadPrayerImp
 import com.mbf.wearable.jordanprayertimes.usecase.LoadInitialHomeScreenDataUseCase
 import com.mbf.wearable.jordanprayertimes.usecase.impl.LoadInitialHomeScreenDataUseCaseImp
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.onStart
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.util.Locale
 
 class MainViewModel : BaseViewModel() {
-    val loadInitialHomeScreenDataUseCase:LoadInitialHomeScreenDataUseCase = LoadInitialHomeScreenDataUseCaseImp(
-    LoadCitiesRepoImp()
-    )
+    val loadInitialHomeScreenDataUseCase: LoadInitialHomeScreenDataUseCase =
+        LoadInitialHomeScreenDataUseCaseImp(
+            LoadCitiesRepoImp(),
+            LoadPrayerImp()
+        )
 
 
     private val _uiState = MutableStateFlow(UiState())
@@ -63,12 +60,14 @@ class MainViewModel : BaseViewModel() {
                                 uiStates.copy(
                                     isLoading = false,
                                     initialData = uiStates.initialData.copy(
-                                        nextPrayTimeIn = "Next prayer in: ${String.format(
-                                            Locale.getDefault(),
-                                            "%02d:%02d",
-                                            ((remainingTime / 1000) % 3600) / 60,  // Total minutes
-                                            (remainingTime / 1000) % 60   // Remaining seconds
-                                        )}"
+                                        nextPrayTimeIn = "Next prayer in: ${
+                                            String.format(
+                                                Locale.getDefault(),
+                                                "%02d:%02d",
+                                                ((remainingTime / 1000) % 3600) / 60,  // Total minutes
+                                                (remainingTime / 1000) % 60   // Remaining seconds
+                                            )
+                                        }"
                                     )
                                 )
 
@@ -76,6 +75,7 @@ class MainViewModel : BaseViewModel() {
                         }
                     }
                 }
+
                 is UIAction.LoadInitialData -> {
                     _uiState.update { it.copy(isLoading = true) }
                     viewModelScope.launch {

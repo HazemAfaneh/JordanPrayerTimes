@@ -1,7 +1,7 @@
 package com.mbf.wearable.jordanprayertimes.data.ui
 
-data class CityUiModel(
+data class PrayerUiModel(
     val id: Int,
     val name: String,
-    val isSelected:Boolean
+    val prayerTime:String
 )

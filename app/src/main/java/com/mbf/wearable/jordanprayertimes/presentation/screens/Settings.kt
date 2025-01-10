@@ -10,9 +10,6 @@ import androidx.wear.compose.foundation.lazy.rememberScalingLazyListState
 import androidx.wear.compose.material.*
 import androidx.wear.compose.ui.tooling.preview.WearPreviewDevices
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.runtime.*
 import androidx.compose.ui.graphics.Color
 import androidx.wear.compose.foundation.lazy.items
 import androidx.wear.compose.material.Chip
@@ -21,6 +18,7 @@ import androidx.wear.compose.material.Text
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.sp
 import com.mbf.wearable.jordanprayertimes.data.ui.CityUiModel
+import com.mbf.wearable.jordanprayertimes.data.ui.PrayerUiModel
 
 @Composable
 fun SettingsScreen(cities:List<CityUiModel>, currentCity:CityUiModel) {
@@ -83,7 +81,7 @@ fun SettingsScreen(cities:List<CityUiModel>, currentCity:CityUiModel) {
                     )
                 },
                 colors = ChipDefaults.chipColors(
-                    backgroundColor = if (city == selectedCity) {
+                    backgroundColor = if (city.id == selectedCity.id) {
                         Color.Cyan.copy(alpha = 0.8f)
                     } else {
                         Color.Gray

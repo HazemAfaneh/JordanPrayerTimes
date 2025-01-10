@@ -1,16 +1,16 @@
 package com.mbf.wearable.jordanprayertimes.data.remote
 
-import com.mbf.wearable.jordanprayertimes.data.ui.CityUiModel
 import com.mbf.wearable.jordanprayertimes.data.ui.PrayerUiModel
 import com.mbf.wearable.jordanprayertimes.helper.timeToHoursAndMinutes
 
-data class CityRemoteModel(
+data class PrayerRemoteModel(
     val id: Int,
     val name: String,
+    val prayerTime:Long
 )
 
-fun CityRemoteModel.toUiModel() = CityUiModel(
+fun PrayerRemoteModel.toUiModel() = PrayerUiModel(
     id = this.id,
     name = this.name,
-    isSelected = false
+    prayerTime = this.prayerTime.timeToHoursAndMinutes()
 )

@@ -15,7 +15,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -23,8 +22,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -45,7 +42,7 @@ import androidx.wear.compose.navigation.SwipeDismissableNavHost
 import androidx.wear.compose.navigation.composable
 import androidx.wear.compose.navigation.rememberSwipeDismissableNavController
 import androidx.wear.tooling.preview.devices.WearDevices
-import com.mbf.wearable.jordanprayertimes.data.ui.CityUiModel
+import com.mbf.wearable.jordanprayertimes.data.ui.PrayerUiModel
 import com.mbf.wearable.jordanprayertimes.data.ui.InitialHomeScreenData
 import com.mbf.wearable.jordanprayertimes.presentation.screens.SettingsScreen
 import com.mbf.wearable.jordanprayertimes.presentation.theme.JordanPrayerTimesTheme
@@ -151,7 +148,7 @@ fun MainScreen(initialHomeScreenData: InitialHomeScreenData, onScreenNavigation:
             )
         }
         item {
-            val items = initialHomeScreenData.cities
+            val items = initialHomeScreenData.prayers
 
             // Calculate the number of rows needed based on the number of items
             val rows = items.chunked(3)  // Divide the list into chunks of 3 items each
@@ -177,7 +174,7 @@ fun MainScreen(initialHomeScreenData: InitialHomeScreenData, onScreenNavigation:
 }
 
 @Composable
-fun CircularItem(city: CityUiModel) {
+fun CircularItem(city: PrayerUiModel) {
     Box(
         modifier = Modifier
             .size(50.dp) // Set the size of the circle

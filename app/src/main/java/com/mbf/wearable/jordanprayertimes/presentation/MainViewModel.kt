@@ -3,6 +3,7 @@ package com.mbf.wearable.jordanprayertimes.presentation
 import androidx.lifecycle.viewModelScope
 import com.mbf.wearable.jordanprayertimes.data.ui.CityUiModel
 import com.mbf.wearable.jordanprayertimes.data.ui.InitialHomeScreenData
+import com.mbf.wearable.jordanprayertimes.data.ui.PrayerUiModel
 import com.mbf.wearable.jordanprayertimes.repositories.impl.LoadCitiesRepoImp
 import com.mbf.wearable.jordanprayertimes.repositories.impl.LoadPrayerImp
 import com.mbf.wearable.jordanprayertimes.usecase.LoadInitialHomeScreenDataUseCase
@@ -38,16 +39,24 @@ class MainViewModel : BaseViewModel() {
     data class UiState(
         val isLoading: Boolean = false,
         val error: String? = null,
-        val initialData: InitialHomeScreenData = InitialHomeScreenData(),
-        val currentCity:CityUiModel = CityUiModel(name = "Amman", id = 1, isSelected = true)
+        val cities: List<CityUiModel> = emptyList(),
+        val prayers: List<PrayerUiModel> = emptyList(),
+        val currentDate: String = java.text.SimpleDateFormat(
+            "EEEE, yyyy-MM-dd",
+            java.util.Locale.getDefault()
+        ).format(java.util.Date()),
+        val nextPray:String = "Ishaa",
+        val nextPrayTime:Long =System.currentTimeMillis() + (60 * 60 * 1000L),
+        val currentCity: CityUiModel = CityUiModel(name = "Amman", id = 1, isSelected = true),
+        val nextPrayTimeIn: String = "11:20",
 
-    )
+        )
 
     private fun loadData() {
         actionTrigger(UIAction.LoadInitialData)
     }
 
-      fun actionTrigger(action: UIAction) {
+    fun actionTrigger(action: UIAction) {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
 //            delay(2000)
@@ -63,26 +72,26 @@ class MainViewModel : BaseViewModel() {
                         }
                     }
                 }
+
                 is UIAction.StartNextPrayerCountDown -> {
 
                     viewModelScope.launch {
-                        var remainingTime = _uiState.value.initialData.nextPrayTime
+                        var remainingTime = _uiState.value.nextPrayTime
                         while (remainingTime > 0) {
                             delay(1000L) // Delay for 1 second
                             remainingTime -= 1000L // Decrease remaining time by 1 second
                             _uiState.update { uiStates ->
                                 uiStates.copy(
                                     isLoading = false,
-                                    initialData = uiStates.initialData.copy(
-                                        nextPrayTimeIn = "Next prayer in: ${
-                                            String.format(
-                                                Locale.getDefault(),
-                                                "%02d:%02d",
-                                                ((remainingTime / 1000) % 3600) / 60,  // Total minutes
-                                                (remainingTime / 1000) % 60   // Remaining seconds
-                                            )
-                                        }"
-                                    )
+                                    nextPrayTimeIn = "Next prayer in: ${
+                                        String.format(
+                                            Locale.getDefault(),
+                                            "%02d:%02d",
+                                            ((remainingTime / 1000) % 3600) / 60,  // Total minutes
+                                            (remainingTime / 1000) % 60   // Remaining seconds
+                                        )
+                                    }"
+
                                 )
 
                             }
@@ -98,7 +107,12 @@ class MainViewModel : BaseViewModel() {
                                 _uiState.update { uiStates ->
                                     uiStates.copy(
                                         isLoading = false,
-                                        initialData = data
+                                        currentCity = data.currentCity,
+                                        cities = data.cities,
+                                        prayers = data.prayers,
+                                        currentDate = data.currentDate,
+                                        nextPray = data.nextPray,
+                                        nextPrayTime = data.nextPrayTime,
                                     )
                                 }
                             }, onError = {

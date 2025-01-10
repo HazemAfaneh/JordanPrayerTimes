@@ -10,4 +10,5 @@ data class InitialHomeScreenData(
     val nextPray:String = "Ishaa",
     val nextPrayTimeIn:String ="11:20",
     val nextPrayTime:Long =System.currentTimeMillis() + (60 * 60 * 1000L),
+    val currentCity:CityUiModel = CityUiModel(name = "Amman", id = 1, isSelected = true)
 )

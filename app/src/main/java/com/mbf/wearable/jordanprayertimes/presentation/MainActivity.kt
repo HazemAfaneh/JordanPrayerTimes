@@ -60,52 +60,50 @@ class MainActivity : ComponentActivity() {
         setContent {
             val uiState = viewModel.uiState.collectAsStateWithLifecycle().value
             val isLoading = uiState.isLoading
-            val initialData = uiState.initialData
+            val cities = uiState.cities
+            val prayers = uiState.prayers 
             val currentCity = uiState.currentCity
-            WearApp(isLoading, initialData, currentCity){
-                viewModel.actionTrigger(MainViewModel.UIAction.SelectCity(it))
-            }
-        }
-    }
-}
-
-@Composable
-fun WearApp( isLoading: Boolean, initialHomeScreenData: InitialHomeScreenData,currentCity:CityUiModel, onCitySelected: (CityUiModel) -> Unit = {}) {
-    JordanPrayerTimesTheme {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colors.background),
-            contentAlignment = Alignment.Center
-        ) {
-            if(isLoading){
-                CircularProgressIndicator(
-                    indicatorColor = Color.Cyan, // Customize as needed
+            val nextPrayTimeIn = uiState.nextPrayTimeIn 
+            JordanPrayerTimesTheme {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(MaterialTheme.colors.background),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if(isLoading){
+                        CircularProgressIndicator(
+                            indicatorColor = Color.Cyan, // Customize as needed
 //                    strokeWidth = 4.dp
-                )
-            }
-            TimeText()
-            val navController = rememberSwipeDismissableNavController()
-            SwipeDismissableNavHost(
-                navController = navController,
-                startDestination = "home_screen"
-            ) {
-                composable("home_screen") {
-                    MainScreen(initialHomeScreenData, currentCity = currentCity, onScreenNavigation = {
-                        navController.navigate("settings_screen")
-                    })
-                }
-                composable("settings_screen") {
-                    SettingsScreen(initialHomeScreenData.cities, currentCity, onCitySelected = onCitySelected)
-                }
-            }
+                        )
+                    }
+                    TimeText()
+                    val navController = rememberSwipeDismissableNavController()
+                    SwipeDismissableNavHost(
+                        navController = navController,
+                        startDestination = "home_screen"
+                    ) {
+                        composable("home_screen") {
+                            MainScreen(nextPray = uiState.nextPray,currentDate = uiState.currentDate, prayers = prayers, currentCity = currentCity, nextPrayTimeIn = nextPrayTimeIn, onScreenNavigation = {
+                                navController.navigate("settings_screen")
+                            })
+                        }
+                        composable("settings_screen") {
+                            SettingsScreen(cities, currentCity, onCitySelected = {
+                                viewModel.actionTrigger(MainViewModel.UIAction.SelectCity(it))
+                            })
+                        }
+                    }
 
+                }
+            }
         }
     }
 }
+ 
 
 @Composable
-fun MainScreen(initialHomeScreenData: InitialHomeScreenData,currentCity:CityUiModel, onScreenNavigation:()->Unit) {
+fun MainScreen(nextPray:String,currentDate:String,prayers:List<PrayerUiModel>,nextPrayTimeIn:String,currentCity:CityUiModel, onScreenNavigation:()->Unit) {
     ScalingLazyColumn(
         modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -120,7 +118,7 @@ fun MainScreen(initialHomeScreenData: InitialHomeScreenData,currentCity:CityUiMo
         }
         item {
             Text(
-                text = initialHomeScreenData.nextPray,
+                text =  nextPray,
                 style = MaterialTheme.typography.body1,
                 color = Color.Gray,
                 modifier = Modifier.padding(bottom = 4.dp)
@@ -128,7 +126,7 @@ fun MainScreen(initialHomeScreenData: InitialHomeScreenData,currentCity:CityUiMo
         }
         item {
             Text(
-                text = initialHomeScreenData.nextPrayTimeIn,
+                text = nextPrayTimeIn,
                 style = MaterialTheme.typography.body1,
                 color = Color.Gray,
                 modifier = Modifier.padding(bottom = 16.dp)
@@ -146,13 +144,13 @@ fun MainScreen(initialHomeScreenData: InitialHomeScreenData,currentCity:CityUiMo
         // Current Date Text
         item {
             Text(
-                text = initialHomeScreenData.currentDate,
+                text =  currentDate,
                 style = MaterialTheme.typography.body2,
                 color = Color.White
             )
         }
         item {
-            val items = initialHomeScreenData.prayers
+            val items =  prayers
 
             // Calculate the number of rows needed based on the number of items
             val rows = items.chunked(3)  // Divide the list into chunks of 3 items each
@@ -214,5 +212,5 @@ fun CircularItem(city: PrayerUiModel) {
 @Preview(device = WearDevices.SMALL_ROUND, showSystemUi = true)
 @Composable
 fun DefaultPreview() {
-    WearApp(true, InitialHomeScreenData(), currentCity = CityUiModel(0,"",false))
+//    WearApp(true, InitialHomeScreenData(), nextPrayTimeIn = "",currentCity = CityUiModel(0,"",false))
 }

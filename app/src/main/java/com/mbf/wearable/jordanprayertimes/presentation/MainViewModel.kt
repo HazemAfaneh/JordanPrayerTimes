@@ -1,6 +1,7 @@
 package com.mbf.wearable.jordanprayertimes.presentation
 
 import androidx.lifecycle.viewModelScope
+import com.mbf.wearable.jordanprayertimes.data.ui.CityUiModel
 import com.mbf.wearable.jordanprayertimes.data.ui.InitialHomeScreenData
 import com.mbf.wearable.jordanprayertimes.repositories.impl.LoadCitiesRepoImp
 import com.mbf.wearable.jordanprayertimes.repositories.impl.LoadPrayerImp
@@ -37,18 +38,31 @@ class MainViewModel : BaseViewModel() {
     data class UiState(
         val isLoading: Boolean = false,
         val error: String? = null,
-        val initialData: InitialHomeScreenData = InitialHomeScreenData()
+        val initialData: InitialHomeScreenData = InitialHomeScreenData(),
+        val currentCity:CityUiModel = CityUiModel(name = "Amman", id = 1, isSelected = true)
+
     )
 
     private fun loadData() {
         actionTrigger(UIAction.LoadInitialData)
     }
 
-    private fun actionTrigger(action: UIAction) {
+      fun actionTrigger(action: UIAction) {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
 //            delay(2000)
             when (action) {
+                is UIAction.SelectCity -> {
+                    viewModelScope.launch {
+
+                        _uiState.update { uiStates ->
+                            uiStates.copy(
+                                isLoading = false,
+                                currentCity = action.city,
+                            )
+                        }
+                    }
+                }
                 is UIAction.StartNextPrayerCountDown -> {
 
                     viewModelScope.launch {
@@ -111,5 +125,6 @@ class MainViewModel : BaseViewModel() {
     sealed class UIAction {
         data object LoadInitialData : UIAction()
         data object StartNextPrayerCountDown : UIAction()
+        data class SelectCity(val city: CityUiModel) : UIAction()
     }
 }

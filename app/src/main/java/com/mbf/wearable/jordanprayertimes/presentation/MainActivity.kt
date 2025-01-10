@@ -42,6 +42,7 @@ import androidx.wear.compose.navigation.SwipeDismissableNavHost
 import androidx.wear.compose.navigation.composable
 import androidx.wear.compose.navigation.rememberSwipeDismissableNavController
 import androidx.wear.tooling.preview.devices.WearDevices
+import com.mbf.wearable.jordanprayertimes.data.ui.CityUiModel
 import com.mbf.wearable.jordanprayertimes.data.ui.PrayerUiModel
 import com.mbf.wearable.jordanprayertimes.data.ui.InitialHomeScreenData
 import com.mbf.wearable.jordanprayertimes.presentation.screens.SettingsScreen
@@ -60,13 +61,16 @@ class MainActivity : ComponentActivity() {
             val uiState = viewModel.uiState.collectAsStateWithLifecycle().value
             val isLoading = uiState.isLoading
             val initialData = uiState.initialData
-            WearApp(isLoading, initialData)
+            val currentCity = uiState.currentCity
+            WearApp(isLoading, initialData, currentCity){
+                viewModel.actionTrigger(MainViewModel.UIAction.SelectCity(it))
+            }
         }
     }
 }
 
 @Composable
-fun WearApp( isLoading: Boolean, initialHomeScreenData: InitialHomeScreenData) {
+fun WearApp( isLoading: Boolean, initialHomeScreenData: InitialHomeScreenData,currentCity:CityUiModel, onCitySelected: (CityUiModel) -> Unit = {}) {
     JordanPrayerTimesTheme {
         Box(
             modifier = Modifier
@@ -87,12 +91,12 @@ fun WearApp( isLoading: Boolean, initialHomeScreenData: InitialHomeScreenData) {
                 startDestination = "home_screen"
             ) {
                 composable("home_screen") {
-                    MainScreen(initialHomeScreenData, onScreenNavigation = {
+                    MainScreen(initialHomeScreenData, currentCity = currentCity, onScreenNavigation = {
                         navController.navigate("settings_screen")
                     })
                 }
                 composable("settings_screen") {
-                    SettingsScreen(initialHomeScreenData.cities, initialHomeScreenData.currentCity)
+                    SettingsScreen(initialHomeScreenData.cities, currentCity, onCitySelected = onCitySelected)
                 }
             }
 
@@ -101,14 +105,14 @@ fun WearApp( isLoading: Boolean, initialHomeScreenData: InitialHomeScreenData) {
 }
 
 @Composable
-fun MainScreen(initialHomeScreenData: InitialHomeScreenData, onScreenNavigation:()->Unit) {
+fun MainScreen(initialHomeScreenData: InitialHomeScreenData,currentCity:CityUiModel, onScreenNavigation:()->Unit) {
     ScalingLazyColumn(
         modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
     )  {
         item {
             Text(
-                text = initialHomeScreenData.currentCity.name,
+                text =  currentCity.name,
                 style = MaterialTheme.typography.title1,
                 color = Color.White,
                 modifier = Modifier.padding(bottom = 8.dp).clickable { onScreenNavigation.invoke() }
@@ -210,5 +214,5 @@ fun CircularItem(city: PrayerUiModel) {
 @Preview(device = WearDevices.SMALL_ROUND, showSystemUi = true)
 @Composable
 fun DefaultPreview() {
-    WearApp(true, InitialHomeScreenData())
+    WearApp(true, InitialHomeScreenData(), currentCity = CityUiModel(0,"",false))
 }

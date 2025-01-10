@@ -21,10 +21,10 @@ import com.mbf.wearable.jordanprayertimes.data.ui.CityUiModel
 import com.mbf.wearable.jordanprayertimes.data.ui.PrayerUiModel
 
 @Composable
-fun SettingsScreen(cities:List<CityUiModel>, currentCity:CityUiModel) {
+fun SettingsScreen(cities:List<CityUiModel>, currentCity:CityUiModel, onCitySelected: (CityUiModel) -> Unit) {
     val listState = rememberScalingLazyListState()
     var notificationsEnabled by remember { mutableStateOf(false) }
-    var selectedCity by remember { mutableStateOf<CityUiModel>(currentCity) }
+    var selectedCity by remember { mutableStateOf(currentCity) }
     ScalingLazyColumn(
         modifier = Modifier.fillMaxSize(),
         state = listState
@@ -72,6 +72,7 @@ fun SettingsScreen(cities:List<CityUiModel>, currentCity:CityUiModel) {
                 modifier = Modifier.fillMaxWidth(),
                 onClick = {
                     selectedCity = city
+                    onCitySelected(city)
                 },
                 label = {
                     Text(

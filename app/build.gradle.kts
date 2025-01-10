@@ -39,6 +39,8 @@ android {
 }
 
 dependencies {
+    // Navigation Compose
+    implementation ("androidx.wear.compose:compose-navigation:1.4.0")
 
     implementation(libs.play.services.wearable)
     implementation(platform(libs.compose.bom))

@@ -11,6 +11,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -40,9 +41,13 @@ import androidx.wear.compose.material.CircularProgressIndicator
 import androidx.wear.compose.material.MaterialTheme
 import androidx.wear.compose.material.Text
 import androidx.wear.compose.material.TimeText
+import androidx.wear.compose.navigation.SwipeDismissableNavHost
+import androidx.wear.compose.navigation.composable
+import androidx.wear.compose.navigation.rememberSwipeDismissableNavController
 import androidx.wear.tooling.preview.devices.WearDevices
 import com.mbf.wearable.jordanprayertimes.data.ui.CityUiModel
 import com.mbf.wearable.jordanprayertimes.data.ui.InitialHomeScreenData
+import com.mbf.wearable.jordanprayertimes.presentation.screens.SettingsScreen
 import com.mbf.wearable.jordanprayertimes.presentation.theme.JordanPrayerTimesTheme
 
 class MainActivity : ComponentActivity() {
@@ -79,24 +84,37 @@ fun WearApp( isLoading: Boolean, initialHomeScreenData: InitialHomeScreenData) {
                 )
             }
             TimeText()
-            MainScreen(initialHomeScreenData = initialHomeScreenData)
+            val navController = rememberSwipeDismissableNavController()
+            SwipeDismissableNavHost(
+                navController = navController,
+                startDestination = "home_screen"
+            ) {
+                composable("home_screen") {
+                    MainScreen(initialHomeScreenData, onScreenNavigation = {
+                        navController.navigate("settings_screen")
+                    })
+                }
+                composable("settings_screen") {
+                    SettingsScreen(initialHomeScreenData.cities, initialHomeScreenData.currentCity)
+                }
+            }
 
         }
     }
 }
 
 @Composable
-fun MainScreen(initialHomeScreenData: InitialHomeScreenData) {
+fun MainScreen(initialHomeScreenData: InitialHomeScreenData, onScreenNavigation:()->Unit) {
     ScalingLazyColumn(
         modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
     )  {
         item {
             Text(
-                text = initialHomeScreenData.currentCity,
+                text = initialHomeScreenData.currentCity.name,
                 style = MaterialTheme.typography.title1,
                 color = Color.White,
-                modifier = Modifier.padding(bottom = 8.dp)
+                modifier = Modifier.padding(bottom = 8.dp).clickable { onScreenNavigation.invoke() }
             )
         }
         item {

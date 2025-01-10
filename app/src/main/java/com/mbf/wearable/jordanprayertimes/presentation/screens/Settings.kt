@@ -21,15 +21,16 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mbf.wearable.jordanprayertimes.data.ui.CityUiModel
 import com.mbf.wearable.jordanprayertimes.data.ui.PrayerUiModel
+import com.mbf.wearable.jordanprayertimes.presentation.LocalAppSharedState
 import com.mbf.wearable.jordanprayertimes.presentation.MainViewModel
 
 @Composable
-fun SettingsScreen(onCitySelected: (CityUiModel) -> Unit) {
-    val viewModel: MainViewModel = hiltViewModel()
-    val uiState = viewModel.uiState.collectAsStateWithLifecycle().value
+fun SettingsScreen() {
+    val viewModel = LocalAppSharedState.current
+    val uiState = viewModel?.uiState?.collectAsStateWithLifecycle()?.value
     val listState = rememberScalingLazyListState()
     var notificationsEnabled by remember { mutableStateOf(false) }
-    var selectedCity by remember { mutableStateOf(uiState.currentCity) }
+    var selectedCity by remember { mutableStateOf(uiState?.currentCity) }
     ScalingLazyColumn(
         modifier = Modifier.fillMaxSize(),
         state = listState
@@ -72,12 +73,13 @@ fun SettingsScreen(onCitySelected: (CityUiModel) -> Unit) {
             )
         }
 
-        items(uiState.cities) { city ->
+        items(uiState?.cities?: emptyList()) { city ->
             Chip(
                 modifier = Modifier.fillMaxWidth(),
                 onClick = {
                     selectedCity = city
-                    onCitySelected(city)
+                    viewModel?.actionTrigger(MainViewModel.UIAction.SelectCity(city))
+
                 },
                 label = {
                     Text(
@@ -87,7 +89,7 @@ fun SettingsScreen(onCitySelected: (CityUiModel) -> Unit) {
                     )
                 },
                 colors = ChipDefaults.chipColors(
-                    backgroundColor = if (city.id == selectedCity.id) {
+                    backgroundColor = if (city.id == selectedCity?.id) {
                         Color.Cyan.copy(alpha = 0.8f)
                     } else {
                         Color.Gray

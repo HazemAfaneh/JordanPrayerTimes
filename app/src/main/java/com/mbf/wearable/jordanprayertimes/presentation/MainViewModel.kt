@@ -1,5 +1,6 @@
 package com.mbf.wearable.jordanprayertimes.presentation
 
+import androidx.compose.runtime.compositionLocalOf
 import androidx.lifecycle.viewModelScope
 import com.mbf.wearable.jordanprayertimes.data.ui.CityUiModel
 import com.mbf.wearable.jordanprayertimes.data.ui.InitialHomeScreenData
@@ -12,12 +13,19 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.util.Locale
 import javax.inject.Inject
 
+val LocalAppSharedState =
+    compositionLocalOf<MainViewModel?> {
+        null
+    }
 @HiltViewModel
 class MainViewModel @Inject constructor(): BaseViewModel() {
     val loadInitialHomeScreenDataUseCase: LoadInitialHomeScreenDataUseCase =
@@ -28,17 +36,15 @@ class MainViewModel @Inject constructor(): BaseViewModel() {
 
 
     private val _uiState = MutableStateFlow(UiState())
-    val uiState = _uiState.asStateFlow()
-
-    //    val uiState = _uiState.onStart { loadData() }.stateIn(
-//        viewModelScope,
-//        SharingStarted.WhileSubscribed(5000L),
-//        false
-//    )
-    init {
-        loadData()
-    }
-
+    val uiState = _uiState
+        .onStart {
+            loadData()
+        }
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000L),
+            _uiState.value
+        )
     data class UiState(
         val isLoading: Boolean = false,
         val error: String? = null,
@@ -55,7 +61,7 @@ class MainViewModel @Inject constructor(): BaseViewModel() {
 
         )
 
-    private fun loadData() {
+    fun loadData() {
         actionTrigger(UIAction.LoadInitialData)
     }
 

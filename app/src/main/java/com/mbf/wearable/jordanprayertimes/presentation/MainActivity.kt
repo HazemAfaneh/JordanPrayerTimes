@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -62,33 +63,35 @@ class MainActivity : ComponentActivity() {
         setTheme(android.R.style.Theme_DeviceDefault)
 
         setContent {
-            JordanPrayerTimesTheme {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(MaterialTheme.colors.background),
-                    contentAlignment = Alignment.Center
-                ) {
-                    TimeText()
-                    val navController = rememberSwipeDismissableNavController()
-                    SwipeDismissableNavHost(
-                        navController = navController,
-                        startDestination = "home_screen"
+            CompositionLocalProvider(LocalAppSharedState provides viewModel) {
+                JordanPrayerTimesTheme {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(MaterialTheme.colors.background),
+                        contentAlignment = Alignment.Center
                     ) {
-                        composable("home_screen") {
-                            MainScreen {
-                                navController.navigate("settings_screen")
+                        TimeText()
+                        val navController = rememberSwipeDismissableNavController()
+                        SwipeDismissableNavHost(
+                            navController = navController,
+                            startDestination = "home_screen"
+                        ) {
+                            composable("home_screen") {
+                                MainScreen {
+                                    navController.navigate("settings_screen")
+                                }
+                            }
+                            composable("settings_screen") {
+                                SettingsScreen()
                             }
                         }
-                        composable("settings_screen") {
-                            SettingsScreen(onCitySelected = {
-                                viewModel.actionTrigger(MainViewModel.UIAction.SelectCity(it))
-                            })
-                        }
-                    }
 
+                    }
                 }
             }
+
+
         }
     }
 }

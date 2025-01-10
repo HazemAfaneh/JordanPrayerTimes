@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -28,16 +29,18 @@ import androidx.wear.compose.material.CircularProgressIndicator
 import androidx.wear.compose.material.MaterialTheme
 import androidx.wear.compose.material.Text
 import com.mbf.wearable.jordanprayertimes.data.ui.PrayerUiModel
+import com.mbf.wearable.jordanprayertimes.presentation.LocalAppSharedState
 import com.mbf.wearable.jordanprayertimes.presentation.MainViewModel
 
 @Composable
 fun MainScreen(onScreenNavigation: () -> Unit) {
-    val viewModel: MainViewModel = hiltViewModel()
-    val uiState = viewModel.uiState.collectAsStateWithLifecycle().value
-    val isLoading = uiState.isLoading
-    val prayers = uiState.prayers
-    val currentCity = uiState.currentCity
-    val nextPrayTimeIn = uiState.nextPrayTimeIn
+    val viewModel = LocalAppSharedState.current
+    val uiState = viewModel?.uiState?.collectAsStateWithLifecycle()?.value
+    val isLoading =  uiState?.isLoading == true
+    val prayers =  uiState?.prayers
+    val currentCity =  uiState?.currentCity
+    val nextPrayTimeIn =  uiState?.nextPrayTimeIn
+
     Box( modifier = Modifier
         .fillMaxSize()
         .background(MaterialTheme.colors.background),
@@ -54,7 +57,7 @@ fun MainScreen(onScreenNavigation: () -> Unit) {
     ) {
         item {
             Text(
-                text = currentCity.name,
+                text = currentCity?.name?:"",
                 style = MaterialTheme.typography.title1,
                 color = Color.White,
                 modifier = Modifier
@@ -64,7 +67,7 @@ fun MainScreen(onScreenNavigation: () -> Unit) {
         }
         item {
             Text(
-                text = uiState.nextPray,
+                text =  uiState?.nextPray?:"",
                 style = MaterialTheme.typography.body1,
                 color = Color.Gray,
                 modifier = Modifier.padding(bottom = 4.dp)
@@ -72,7 +75,7 @@ fun MainScreen(onScreenNavigation: () -> Unit) {
         }
         item {
             Text(
-                text = nextPrayTimeIn,
+                text = nextPrayTimeIn?:"",
                 style = MaterialTheme.typography.body1,
                 color = Color.Gray,
                 modifier = Modifier.padding(bottom = 16.dp)
@@ -90,7 +93,7 @@ fun MainScreen(onScreenNavigation: () -> Unit) {
         // Current Date Text
         item {
             Text(
-                text = uiState.currentDate,
+                text =  uiState?.currentDate?:"",
                 style = MaterialTheme.typography.body2,
                 color = Color.White
             )
@@ -99,14 +102,14 @@ fun MainScreen(onScreenNavigation: () -> Unit) {
             val items = prayers
 
             // Calculate the number of rows needed based on the number of items
-            val rows = items.chunked(3)  // Divide the list into chunks of 3 items each
+            val rows = items?.chunked(3)  // Divide the list into chunks of 3 items each
 
             Column(
                 modifier = Modifier.fillMaxSize(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 // For each row
-                for (row in rows) {
+                for (row in rows?: emptyList()) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically,

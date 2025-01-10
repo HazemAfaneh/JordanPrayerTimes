@@ -32,6 +32,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.wear.compose.foundation.lazy.ScalingLazyColumn
 import androidx.wear.compose.material.CircularProgressIndicator
@@ -45,9 +46,12 @@ import androidx.wear.tooling.preview.devices.WearDevices
 import com.mbf.wearable.jordanprayertimes.data.ui.CityUiModel
 import com.mbf.wearable.jordanprayertimes.data.ui.PrayerUiModel
 import com.mbf.wearable.jordanprayertimes.data.ui.InitialHomeScreenData
+import com.mbf.wearable.jordanprayertimes.presentation.screens.MainScreen
 import com.mbf.wearable.jordanprayertimes.presentation.screens.SettingsScreen
 import com.mbf.wearable.jordanprayertimes.presentation.theme.JordanPrayerTimesTheme
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     private val viewModel: MainViewModel by viewModels()
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -58,12 +62,6 @@ class MainActivity : ComponentActivity() {
         setTheme(android.R.style.Theme_DeviceDefault)
 
         setContent {
-            val uiState = viewModel.uiState.collectAsStateWithLifecycle().value
-            val isLoading = uiState.isLoading
-            val cities = uiState.cities
-            val prayers = uiState.prayers 
-            val currentCity = uiState.currentCity
-            val nextPrayTimeIn = uiState.nextPrayTimeIn 
             JordanPrayerTimesTheme {
                 Box(
                     modifier = Modifier
@@ -71,12 +69,6 @@ class MainActivity : ComponentActivity() {
                         .background(MaterialTheme.colors.background),
                     contentAlignment = Alignment.Center
                 ) {
-                    if(isLoading){
-                        CircularProgressIndicator(
-                            indicatorColor = Color.Cyan, // Customize as needed
-//                    strokeWidth = 4.dp
-                        )
-                    }
                     TimeText()
                     val navController = rememberSwipeDismissableNavController()
                     SwipeDismissableNavHost(
@@ -84,12 +76,12 @@ class MainActivity : ComponentActivity() {
                         startDestination = "home_screen"
                     ) {
                         composable("home_screen") {
-                            MainScreen(nextPray = uiState.nextPray,currentDate = uiState.currentDate, prayers = prayers, currentCity = currentCity, nextPrayTimeIn = nextPrayTimeIn, onScreenNavigation = {
+                            MainScreen {
                                 navController.navigate("settings_screen")
-                            })
+                            }
                         }
                         composable("settings_screen") {
-                            SettingsScreen(cities, currentCity, onCitySelected = {
+                            SettingsScreen(onCitySelected = {
                                 viewModel.actionTrigger(MainViewModel.UIAction.SelectCity(it))
                             })
                         }
@@ -100,115 +92,9 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
- 
 
-@Composable
-fun MainScreen(nextPray:String,currentDate:String,prayers:List<PrayerUiModel>,nextPrayTimeIn:String,currentCity:CityUiModel, onScreenNavigation:()->Unit) {
-    ScalingLazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    )  {
-        item {
-            Text(
-                text =  currentCity.name,
-                style = MaterialTheme.typography.title1,
-                color = Color.White,
-                modifier = Modifier.padding(bottom = 8.dp).clickable { onScreenNavigation.invoke() }
-            )
-        }
-        item {
-            Text(
-                text =  nextPray,
-                style = MaterialTheme.typography.body1,
-                color = Color.Gray,
-                modifier = Modifier.padding(bottom = 4.dp)
-            )
-        }
-        item {
-            Text(
-                text = nextPrayTimeIn,
-                style = MaterialTheme.typography.body1,
-                color = Color.Gray,
-                modifier = Modifier.padding(bottom = 16.dp)
-            )
-        }
-        item {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(1.dp)
-                    .background(androidx.wear.compose.material.MaterialTheme.colors.surface)
-                    .padding(vertical = 16.dp)
-            )
-        }
-        // Current Date Text
-        item {
-            Text(
-                text =  currentDate,
-                style = MaterialTheme.typography.body2,
-                color = Color.White
-            )
-        }
-        item {
-            val items =  prayers
 
-            // Calculate the number of rows needed based on the number of items
-            val rows = items.chunked(3)  // Divide the list into chunks of 3 items each
 
-            Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
-                // For each row
-                for (row in rows) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(16.dp), // Space between items
-                    ) {
-                        // For each item in the row
-                        for (item in row) {
-                            CircularItem(item)
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-}
-
-@Composable
-fun CircularItem(city: PrayerUiModel) {
-    Box(
-        modifier = Modifier
-            .size(50.dp) // Set the size of the circle
-            .clip(CircleShape) // Make it a circle
-            .background(Color.Transparent) // Background color of the circle
-            .padding(8.dp), // Padding inside the circle
-        contentAlignment = Alignment.Center
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            Text(
-                text = city.name,
-                color = Color.Cyan,
-                style = TextStyle(
-                    fontSize = 9.sp,  // Set the desired smaller font size
-                    color = Color.White
-                )
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = city.prayerTime,
-                color = Color.White,
-                style = TextStyle(
-                    fontSize = 8.sp,  // Set the desired smaller font size
-                    color = Color.White
-                )
-            )
-        }
-    }
-}
 @Preview(device = WearDevices.SMALL_ROUND, showSystemUi = true)
 @Composable
 fun DefaultPreview() {

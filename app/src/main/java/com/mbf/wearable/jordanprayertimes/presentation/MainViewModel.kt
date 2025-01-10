@@ -8,6 +8,7 @@ import com.mbf.wearable.jordanprayertimes.repositories.impl.LoadCitiesRepoImp
 import com.mbf.wearable.jordanprayertimes.repositories.impl.LoadPrayerImp
 import com.mbf.wearable.jordanprayertimes.usecase.LoadInitialHomeScreenDataUseCase
 import com.mbf.wearable.jordanprayertimes.usecase.impl.LoadInitialHomeScreenDataUseCaseImp
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,8 +16,10 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.util.Locale
+import javax.inject.Inject
 
-class MainViewModel : BaseViewModel() {
+@HiltViewModel
+class MainViewModel @Inject constructor(): BaseViewModel() {
     val loadInitialHomeScreenDataUseCase: LoadInitialHomeScreenDataUseCase =
         LoadInitialHomeScreenDataUseCaseImp(
             LoadCitiesRepoImp(),

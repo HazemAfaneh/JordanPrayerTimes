@@ -17,14 +17,19 @@ import androidx.wear.compose.material.ChipDefaults
 import androidx.wear.compose.material.Text
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mbf.wearable.jordanprayertimes.data.ui.CityUiModel
 import com.mbf.wearable.jordanprayertimes.data.ui.PrayerUiModel
+import com.mbf.wearable.jordanprayertimes.presentation.MainViewModel
 
 @Composable
-fun SettingsScreen(cities:List<CityUiModel>, currentCity:CityUiModel, onCitySelected: (CityUiModel) -> Unit) {
+fun SettingsScreen(onCitySelected: (CityUiModel) -> Unit) {
+    val viewModel: MainViewModel = hiltViewModel()
+    val uiState = viewModel.uiState.collectAsStateWithLifecycle().value
     val listState = rememberScalingLazyListState()
     var notificationsEnabled by remember { mutableStateOf(false) }
-    var selectedCity by remember { mutableStateOf(currentCity) }
+    var selectedCity by remember { mutableStateOf(uiState.currentCity) }
     ScalingLazyColumn(
         modifier = Modifier.fillMaxSize(),
         state = listState
@@ -67,7 +72,7 @@ fun SettingsScreen(cities:List<CityUiModel>, currentCity:CityUiModel, onCitySele
             )
         }
 
-        items(cities) { city ->
+        items(uiState.cities) { city ->
             Chip(
                 modifier = Modifier.fillMaxWidth(),
                 onClick = {

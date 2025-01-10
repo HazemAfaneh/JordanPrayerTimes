@@ -3,8 +3,11 @@ package com.mbf.wearable.jordanprayertimes.presentation
 import androidx.lifecycle.ViewModel
 import com.mbf.wearable.jordanprayertimes.ErrorEntity
 import com.mbf.wearable.jordanprayertimes.ResultData
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 
-open class BaseViewModel : ViewModel() {
+@HiltViewModel
+open class BaseViewModel @Inject constructor(): ViewModel() {
     fun <T> handleResult(
         result: ResultData<T>,
         onSuccess: (T) -> Unit,

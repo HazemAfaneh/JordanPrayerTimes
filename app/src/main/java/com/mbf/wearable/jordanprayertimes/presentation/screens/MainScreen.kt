@@ -111,16 +111,17 @@ fun MainScreen(onScreenNavigation: () -> Unit) {
                 modifier = Modifier.fillMaxSize(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // For each row
                 for (row in rows?: emptyList()) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(16.dp), // Space between items
+                        horizontalArrangement = Arrangement.Center, // Changed from spacedBy to Center
                     ) {
                         // For each item in the row
                         for (item in row) {
-                            CircularItem(item)
+                            Box(modifier = Modifier.padding(horizontal = 8.dp)) { // Added horizontal padding
+                                CircularItem(item)
+                            }
                         }
                     }
                 }
@@ -145,7 +146,7 @@ private fun CountdownDisplay(viewModel: MainViewModel?) {
 fun CircularItem(city: PrayerUiModel) {
     Box(
         modifier = Modifier
-            .size(50.dp) // Set the size of the circle
+            .size(55.dp) // Set the size of the circle
             .clip(CircleShape) // Make it a circle
             .background(Color.Transparent) // Background color of the circle
             .padding(8.dp), // Padding inside the circle
@@ -159,7 +160,7 @@ fun CircularItem(city: PrayerUiModel) {
                 text = city.name,
                 color = Color.Cyan,
                 style = TextStyle(
-                    fontSize = 9.sp,  // Set the desired smaller font size
+                    fontSize = 10.sp,  // Set the desired smaller font size
                     color = Color.White
                 )
             )
@@ -168,7 +169,7 @@ fun CircularItem(city: PrayerUiModel) {
                 text = city.prayerTime,
                 color = Color.White,
                 style = TextStyle(
-                    fontSize = 8.sp,  // Set the desired smaller font size
+                    fontSize = 9.sp,  // Set the desired smaller font size
                     color = Color.White
                 )
             )

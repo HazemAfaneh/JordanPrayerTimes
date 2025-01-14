@@ -1,5 +1,6 @@
 package com.mbf.wearable.jordanprayertimes.presentation.screens
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -15,8 +16,12 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.composed
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
@@ -36,23 +41,26 @@ import com.mbf.wearable.jordanprayertimes.presentation.MainViewModel
 fun MainScreen(onScreenNavigation: () -> Unit) {
     val viewModel = LocalAppSharedState.current
     val uiState = viewModel?.uiState?.collectAsStateWithLifecycle()?.value
+//    val countdownFlow = viewModel?.countdownFlow?.collectAsStateWithLifecycle()?.value
     val isLoading =  uiState?.isLoading == true
     val prayers =  uiState?.prayers
     val currentCity =  uiState?.currentCity
-    val nextPrayTimeIn =  uiState?.nextPrayTimeIn
 
     Box( modifier = Modifier
         .fillMaxSize()
         .background(MaterialTheme.colors.background),
         contentAlignment = Alignment.Center) {
-        if(isLoading){
-            CircularProgressIndicator(
-                indicatorColor = Color.Cyan, // Customize as needed
-//                    strokeWidth = 4.dp
-            )
-        }
+//        if(isLoading){
+//            CircularProgressIndicator(
+//                indicatorColor = Color.Cyan, // Customize as needed
+////                    strokeWidth = 4.dp
+//            )
+//        }
     ScalingLazyColumn(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier.composed {
+            Log.d("Composition", "MainScreen recomposed")
+            this
+        }.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         item {
@@ -74,12 +82,7 @@ fun MainScreen(onScreenNavigation: () -> Unit) {
             )
         }
         item {
-            Text(
-                text = nextPrayTimeIn?:"",
-                style = MaterialTheme.typography.body1,
-                color = Color.Gray,
-                modifier = Modifier.padding(bottom = 16.dp)
-            )
+            CountdownDisplay(viewModel = viewModel)
         }
         item {
             Box(
@@ -127,7 +130,17 @@ fun MainScreen(onScreenNavigation: () -> Unit) {
     }
 
 }
+@Composable
+private fun CountdownDisplay(viewModel: MainViewModel?) {
+    val countdownText = viewModel?.countdownFlow?.collectAsStateWithLifecycle() ?: remember { mutableStateOf("") }
 
+    Text(
+        text = countdownText.value,
+        style = MaterialTheme.typography.body1,
+        color = Color.Gray,
+        modifier = Modifier.padding(bottom = 16.dp)
+    )
+}
 @Composable
 fun CircularItem(city: PrayerUiModel) {
     Box(

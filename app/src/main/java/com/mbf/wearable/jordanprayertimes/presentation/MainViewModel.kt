@@ -10,6 +10,7 @@ import com.mbf.wearable.jordanprayertimes.repositories.impl.LoadPrayerImp
 import com.mbf.wearable.jordanprayertimes.usecase.LoadInitialHomeScreenDataUseCase
 import com.mbf.wearable.jordanprayertimes.usecase.impl.LoadInitialHomeScreenDataUseCaseImp
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -33,6 +34,37 @@ class MainViewModel @Inject constructor(): BaseViewModel() {
             LoadCitiesRepoImp(),
             LoadPrayerImp()
         )
+    private var countdownJob: Job? = null
+
+    private val _countdownFlow = MutableStateFlow("")
+    val countdownFlow = _countdownFlow.asStateFlow()
+
+    private fun startNextPrayerCountDown() {
+        countdownJob?.cancel()
+
+        countdownJob = viewModelScope.launch {
+            var remainingTime = _uiState.value.nextPrayTime - System.currentTimeMillis()
+
+            while (remainingTime > 0) {
+                val formattedTime = String.format(
+                    Locale.getDefault(),
+                    "%02d:%02d",
+                    ((remainingTime / 1000) % 3600) / 60,
+                    (remainingTime / 1000) % 60
+                )
+
+                // Update only the countdown flow, not the main state
+                _countdownFlow.value = "Next prayer in: $formattedTime"
+
+                delay(1000L)
+                remainingTime -= 1000L
+            }
+        }
+    }
+    override fun onCleared() {
+        super.onCleared()
+        countdownJob?.cancel()
+    }
 
 
     private val _uiState = MutableStateFlow(UiState())
@@ -57,7 +89,7 @@ class MainViewModel @Inject constructor(): BaseViewModel() {
         val nextPray:String = "Ishaa",
         val nextPrayTime:Long =System.currentTimeMillis() + (60 * 60 * 1000L),
         val currentCity: CityUiModel = CityUiModel(name = "Amman", id = 1, isSelected = true),
-        val nextPrayTimeIn: String = "11:20",
+//        val nextPrayTimeIn: String = "11:20",
 
         )
 
@@ -83,29 +115,7 @@ class MainViewModel @Inject constructor(): BaseViewModel() {
                 }
 
                 is UIAction.StartNextPrayerCountDown -> {
-
-                    viewModelScope.launch {
-                        var remainingTime = _uiState.value.nextPrayTime
-                        while (remainingTime > 0) {
-                            delay(1000L) // Delay for 1 second
-                            remainingTime -= 1000L // Decrease remaining time by 1 second
-                            _uiState.update { uiStates ->
-                                uiStates.copy(
-                                    isLoading = false,
-                                    nextPrayTimeIn = "Next prayer in: ${
-                                        String.format(
-                                            Locale.getDefault(),
-                                            "%02d:%02d",
-                                            ((remainingTime / 1000) % 3600) / 60,  // Total minutes
-                                            (remainingTime / 1000) % 60   // Remaining seconds
-                                        )
-                                    }"
-
-                                )
-
-                            }
-                        }
-                    }
+                    startNextPrayerCountDown()
                 }
 
                 is UIAction.LoadInitialData -> {

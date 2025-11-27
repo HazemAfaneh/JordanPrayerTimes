@@ -77,6 +77,8 @@ class MainViewModel @Inject constructor(): BaseViewModel() {
             SharingStarted.WhileSubscribed(5000L),
             _uiState.value
         )
+
+    @androidx.compose.runtime.Immutable
     data class UiState(
         val isLoading: Boolean = false,
         val error: String? = null,
@@ -86,12 +88,10 @@ class MainViewModel @Inject constructor(): BaseViewModel() {
             "EEEE, yyyy-MM-dd",
             java.util.Locale.getDefault()
         ).format(java.util.Date()),
-        val nextPray:String = "Ishaa",
-        val nextPrayTime:Long =System.currentTimeMillis() + (60 * 60 * 1000L),
+        val nextPray: String = "Ishaa",
+        val nextPrayTime: Long = System.currentTimeMillis() + (60 * 60 * 1000L),
         val currentCity: CityUiModel = CityUiModel(name = "Amman", id = 1, isSelected = true),
-//        val nextPrayTimeIn: String = "11:20",
-
-        )
+    )
 
     fun loadData() {
         actionTrigger(UIAction.LoadInitialData)

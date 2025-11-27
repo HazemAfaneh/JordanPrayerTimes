@@ -1,32 +1,30 @@
 package com.mbf.wearable.jordanprayertimes.repositories.impl
 
+import com.mbf.wearable.jordanprayertimes.ErrorEntity
 import com.mbf.wearable.jordanprayertimes.ResultData
-import com.mbf.wearable.jordanprayertimes.data.remote.CityRemoteModel
-import com.mbf.wearable.jordanprayertimes.data.remote.PrayerRemoteModel
-import com.mbf.wearable.jordanprayertimes.data.remote.toUiModel
+import com.mbf.wearable.jordanprayertimes.data.remote.datasource.CitiesRemoteDataSource
+import com.mbf.wearable.jordanprayertimes.data.remote.toUiModels
 import com.mbf.wearable.jordanprayertimes.data.ui.CityUiModel
-import com.mbf.wearable.jordanprayertimes.data.ui.PrayerUiModel
 import com.mbf.wearable.jordanprayertimes.repositories.LoadCitiesRepo
 
-class LoadCitiesRepoImp : LoadCitiesRepo {
+class LoadCitiesRepoImp(
+    private val citiesRemoteDataSource: CitiesRemoteDataSource
+) : LoadCitiesRepo {
     override suspend fun invoke(): ResultData<List<CityUiModel>> {
-        return ResultData.Success(
-            listOf(
-                CityRemoteModel(id =1,name= "Amman"),
-                CityRemoteModel(id =2,name= "Al-Zarqa"),
-                CityRemoteModel(id =3,name= "Salt"),
-                CityRemoteModel(id =4,name= "Al-Ramtha"),
-                CityRemoteModel(id =5,name= "Ajloun"),
-                CityRemoteModel(id =6,name= "Mafraq"),
-                CityRemoteModel(id =7,name= "Karak"),
-                CityRemoteModel(id =8,name= "Tafila"),
-                CityRemoteModel(id =9,name= "Ma'an"),
-                CityRemoteModel(id =10,name= "Aqaba"),
-                CityRemoteModel(id =11,name= "Irbid"),
-                CityRemoteModel(id =12,name= "Jarash"),
-            ).map {
-                it.toUiModel()
+        return when (val result = citiesRemoteDataSource.fetchCities()) {
+            is ResultData.Success -> {
+                val citiesResponse = result.data
+                if (citiesResponse != null) {
+                    ResultData.Success(citiesResponse.toUiModels())
+                } else {
+                    ResultData.Error(
+                        ErrorEntity.InternalError("Empty response from server")
+                    )
+                }
             }
-        )
+            is ResultData.Error -> {
+                ResultData.Error(result.data)
+            }
+        }
     }
 }

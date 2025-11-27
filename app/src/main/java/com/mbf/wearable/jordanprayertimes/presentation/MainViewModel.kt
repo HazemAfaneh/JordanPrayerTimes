@@ -3,13 +3,8 @@ package com.mbf.wearable.jordanprayertimes.presentation
 import androidx.compose.runtime.compositionLocalOf
 import androidx.lifecycle.viewModelScope
 import com.mbf.wearable.jordanprayertimes.data.ui.CityUiModel
-import com.mbf.wearable.jordanprayertimes.data.ui.InitialHomeScreenData
 import com.mbf.wearable.jordanprayertimes.data.ui.PrayerUiModel
-import com.mbf.wearable.jordanprayertimes.repositories.impl.LoadCitiesRepoImp
-import com.mbf.wearable.jordanprayertimes.repositories.impl.LoadPrayerImp
 import com.mbf.wearable.jordanprayertimes.usecase.LoadInitialHomeScreenDataUseCase
-import com.mbf.wearable.jordanprayertimes.usecase.impl.LoadInitialHomeScreenDataUseCaseImp
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
@@ -21,19 +16,15 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.util.Locale
-import javax.inject.Inject
 
 val LocalAppSharedState =
     compositionLocalOf<MainViewModel?> {
         null
     }
-@HiltViewModel
-class MainViewModel @Inject constructor(): BaseViewModel() {
-    val loadInitialHomeScreenDataUseCase: LoadInitialHomeScreenDataUseCase =
-        LoadInitialHomeScreenDataUseCaseImp(
-            LoadCitiesRepoImp(),
-            LoadPrayerImp()
-        )
+
+class MainViewModel(
+    private val loadInitialHomeScreenDataUseCase: LoadInitialHomeScreenDataUseCase
+) : BaseViewModel() {
     private var countdownJob: Job? = null
 
     private val _countdownFlow = MutableStateFlow("")

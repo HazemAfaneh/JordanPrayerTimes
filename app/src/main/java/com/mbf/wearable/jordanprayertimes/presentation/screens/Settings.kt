@@ -8,9 +8,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
@@ -22,6 +20,7 @@ import androidx.wear.compose.foundation.lazy.items
 import androidx.wear.compose.foundation.lazy.rememberScalingLazyListState
 import androidx.wear.compose.material.Chip
 import androidx.wear.compose.material.ChipDefaults
+import androidx.wear.compose.material.CircularProgressIndicator
 import androidx.wear.compose.material.MaterialTheme
 import androidx.wear.compose.material.Switch
 import androidx.wear.compose.material.SwitchDefaults
@@ -29,59 +28,98 @@ import androidx.wear.compose.material.Text
 import androidx.wear.compose.material.ToggleChip
 import androidx.wear.compose.ui.tooling.preview.WearPreviewDevices
 import com.mbf.wearable.jordanprayertimes.data.ui.CityUiModel
-import com.mbf.wearable.jordanprayertimes.presentation.LocalAppSharedState
-import com.mbf.wearable.jordanprayertimes.presentation.MainViewModel
+import com.mbf.wearable.jordanprayertimes.presentation.SettingsViewModel
+import org.koin.androidx.compose.koinViewModel
 
+/**
+ * Settings screen with loading indicator
+ * Shows a circular progress bar overlay while fetching cities data from the API
+ */
 @Composable
 fun SettingsScreen() {
-    val viewModel = LocalAppSharedState.current ?: return
+    val viewModel = koinViewModel<SettingsViewModel>()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val listState = rememberScalingLazyListState()
 
-    var notificationsEnabled by remember { mutableStateOf(false) }
-    var selectedCityId by remember(uiState.currentCity.id) {
-        mutableStateOf(uiState.currentCity.id)
-    }
-
-    // Memoize cities list to prevent unnecessary recompositions
+    // Memoize values to prevent unnecessary recompositions
+    val isLoading = remember(uiState.isLoading) { uiState.isLoading }
     val cities = remember(uiState.cities) { uiState.cities }
+    val selectedCityId = remember(uiState.selectedCity?.id) { uiState.selectedCity?.id ?: 0 }
+    val notificationsEnabled =
+        remember(uiState.notificationsEnabled) { uiState.notificationsEnabled }
 
-    ScalingLazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        state = listState
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colors.background)
     ) {
-        item(key = "notifications_toggle") {
-            NotificationToggle(
-                notificationsEnabled = notificationsEnabled,
-                onToggle = { notificationsEnabled = it }
-            )
+        // Main content
+        ScalingLazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            state = listState
+        ) {
+            item(key = "notifications_toggle") {
+                NotificationToggle(
+                    notificationsEnabled = notificationsEnabled,
+                    onToggle = { enabled ->
+                        viewModel.actionTrigger(
+                            SettingsViewModel.UIAction.ToggleNotifications(
+                                enabled
+                            )
+                        )
+                    }
+                )
+            }
+
+            item(key = "divider") {
+                SettingsDivider()
+            }
+
+            item(key = "cities_header") {
+                Text(
+                    text = "Cities",
+                    modifier = Modifier,
+                    style = MaterialTheme.typography.title3
+                )
+            }
+
+            items(
+                items = cities,
+                key = { city -> city.id }
+            ) { city ->
+                CityChip(
+                    city = city,
+                    isSelected = city.id == selectedCityId,
+                    onCitySelected = {
+                        viewModel.actionTrigger(SettingsViewModel.UIAction.SelectCity(city))
+                    }
+                )
+            }
         }
 
-        item(key = "divider") {
-            SettingsDivider()
+        // Loading overlay
+        if (isLoading) {
+            LoadingOverlay()
         }
+    }
+}
 
-        item(key = "cities_header") {
-            Text(
-                text = "Cities",
-                modifier = Modifier,
-                style = MaterialTheme.typography.title3
-            )
-        }
-
-        items(
-            items = cities,
-            key = { city -> city.id }
-        ) { city ->
-            CityChip(
-                city = city,
-                isSelected = city.id == selectedCityId,
-                onCitySelected = {
-                    selectedCityId = city.id
-                    viewModel.actionTrigger(MainViewModel.UIAction.SelectCity(city))
-                }
-            )
-        }
+/**
+ * Loading overlay with circular progress indicator
+ */
+@Composable
+private fun LoadingOverlay() {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colors.background.copy(alpha = 0.7f)),
+        contentAlignment = androidx.compose.ui.Alignment.Center
+    ) {
+        CircularProgressIndicator(
+            indicatorColor = Color.Cyan,
+            strokeWidth = 4.dp,
+            modifier = Modifier.padding(16.dp)
+        )
     }
 }
 

@@ -73,7 +73,6 @@ class MainViewModel(
     data class UiState(
         val isLoading: Boolean = false,
         val error: String? = null,
-        val cities: List<CityUiModel> = emptyList(),
         val prayers: List<PrayerUiModel> = emptyList(),
         val currentDate: String = java.text.SimpleDateFormat(
             "EEEE, yyyy-MM-dd",
@@ -112,20 +111,21 @@ class MainViewModel(
                 is UIAction.LoadInitialData -> {
                     _uiState.update { it.copy(isLoading = true) }
                     viewModelScope.launch {
-                        handleResult(result = loadInitialHomeScreenDataUseCase(),
+                        handleResult(
+                            result = loadInitialHomeScreenDataUseCase(),
                             onSuccess = { data ->
                                 _uiState.update { uiStates ->
                                     uiStates.copy(
                                         isLoading = false,
                                         currentCity = data.currentCity,
-                                        cities = data.cities,
                                         prayers = data.prayers,
                                         currentDate = data.currentDate,
                                         nextPray = data.nextPray,
                                         nextPrayTime = data.nextPrayTime,
                                     )
                                 }
-                            }, onError = {
+                            },
+                            onError = {
                                 viewModelScope.launch {
                                     cancel()
                                     _uiState.emit(
@@ -135,11 +135,10 @@ class MainViewModel(
                                         )
                                     )
                                 }
-                            })
+                            }
+                        )
                         actionTrigger(UIAction.StartNextPrayerCountDown)
                     }
-
-
                 }
             }
 

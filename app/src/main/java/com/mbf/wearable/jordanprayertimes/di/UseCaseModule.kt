@@ -4,10 +4,14 @@ import com.mbf.wearable.jordanprayertimes.usecase.LoadInitialHomeScreenDataUseCa
 import com.mbf.wearable.jordanprayertimes.usecase.impl.LoadInitialHomeScreenDataUseCaseImp
 import org.koin.dsl.module
 
+/**
+ * Use case module for dependency injection
+ * LoadInitialHomeScreenDataUseCase only loads prayer data
+ * Cities are loaded separately in SettingsViewModel
+ */
 val useCaseModule = module {
     single<LoadInitialHomeScreenDataUseCase> {
         LoadInitialHomeScreenDataUseCaseImp(
-            loadCitiesRepo = get(),
             loadPrayer = get()
         )
     }

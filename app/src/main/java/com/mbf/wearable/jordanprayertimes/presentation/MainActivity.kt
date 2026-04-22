@@ -58,7 +58,7 @@ class MainActivity : ComponentActivity() {
                                 }
                             }
                             composable("settings_screen") {
-                                SettingsScreen()
+                                SettingsScreen(onNavigateBack = { navController.popBackStack() })
                             }
                         }
 

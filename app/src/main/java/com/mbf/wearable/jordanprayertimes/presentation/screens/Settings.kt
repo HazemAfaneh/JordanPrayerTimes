@@ -7,8 +7,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import kotlinx.coroutines.flow.MutableStateFlow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -27,14 +30,27 @@ import androidx.wear.compose.material.Text
 import androidx.wear.compose.material.ToggleChip
 import androidx.wear.compose.ui.tooling.preview.WearPreviewDevices
 import com.mbf.wearable.jordanprayertimes.data.ui.CityUiModel
+import com.mbf.wearable.jordanprayertimes.presentation.LocalAppSharedState
+import com.mbf.wearable.jordanprayertimes.presentation.MainViewModel
 import com.mbf.wearable.jordanprayertimes.presentation.SettingsViewModel
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
-fun SettingsScreen() {
+fun SettingsScreen(onNavigateBack: () -> Unit) {
     val viewModel = koinViewModel<SettingsViewModel>()
+    val mainViewModel = LocalAppSharedState.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val mainUiState by remember(mainViewModel) {
+        mainViewModel?.uiState ?: MutableStateFlow(MainViewModel.UiState())
+    }.collectAsStateWithLifecycle()
     val listState = rememberScalingLazyListState()
+
+    // Navigate back once the prayer-times API call finishes (success or error)
+    LaunchedEffect(mainViewModel) {
+        mainViewModel?.citySelectedEvent?.collect {
+            onNavigateBack()
+        }
+    }
 
     Box(
         modifier = Modifier
@@ -76,12 +92,14 @@ fun SettingsScreen() {
                     isSelected = city.id == uiState.selectedCity?.id,
                     onCitySelected = {
                         viewModel.actionTrigger(SettingsViewModel.UIAction.SelectCity(city))
+                        mainViewModel?.actionTrigger(MainViewModel.UIAction.SelectCity(city))
                     }
                 )
             }
         }
 
-        if (uiState.isLoading) {
+        // Show overlay while cities are loading OR while prayer times are being fetched
+        if (uiState.isLoading || mainUiState.isLoading) {
             LoadingOverlay()
         }
     }

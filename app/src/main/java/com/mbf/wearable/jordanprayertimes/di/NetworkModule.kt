@@ -4,6 +4,8 @@ import com.mbf.wearable.jordanprayertimes.data.remote.KtorSetup
 import com.mbf.wearable.jordanprayertimes.data.remote.NetworkConfig
 import com.mbf.wearable.jordanprayertimes.data.remote.datasource.CitiesRemoteDataSource
 import com.mbf.wearable.jordanprayertimes.data.remote.datasource.CitiesRemoteDataSourceImp
+import com.mbf.wearable.jordanprayertimes.data.remote.datasource.PrayerTimesRemoteDataSource
+import com.mbf.wearable.jordanprayertimes.data.remote.datasource.PrayerTimesRemoteDataSourceImp
 import io.ktor.client.HttpClient
 import org.koin.dsl.module
 
@@ -40,5 +42,9 @@ val networkModule = module {
      */
     single<CitiesRemoteDataSource> {
         CitiesRemoteDataSourceImp(httpClient = get())
+    }
+
+    single<PrayerTimesRemoteDataSource> {
+        PrayerTimesRemoteDataSourceImp(httpClient = get())
     }
 }

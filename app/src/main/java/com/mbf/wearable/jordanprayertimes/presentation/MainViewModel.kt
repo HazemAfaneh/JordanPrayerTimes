@@ -5,11 +5,15 @@ import androidx.lifecycle.viewModelScope
 import com.mbf.wearable.jordanprayertimes.data.ui.CityUiModel
 import com.mbf.wearable.jordanprayertimes.data.ui.PrayerUiModel
 import com.mbf.wearable.jordanprayertimes.usecase.LoadInitialHomeScreenDataUseCase
+import com.mbf.wearable.jordanprayertimes.usecase.LoadPrayerTimesForCityUseCase
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
@@ -23,12 +27,16 @@ val LocalAppSharedState =
     }
 
 class MainViewModel(
-    private val loadInitialHomeScreenDataUseCase: LoadInitialHomeScreenDataUseCase
+    private val loadInitialHomeScreenDataUseCase: LoadInitialHomeScreenDataUseCase,
+    private val loadPrayerTimesForCityUseCase: LoadPrayerTimesForCityUseCase
 ) : BaseViewModel() {
     private var countdownJob: Job? = null
 
     private val _countdownFlow = MutableStateFlow("")
     val countdownFlow = _countdownFlow.asStateFlow()
+
+    private val _citySelectedEvent = MutableSharedFlow<Unit>(replay = 0)
+    val citySelectedEvent: SharedFlow<Unit> = _citySelectedEvent.asSharedFlow()
 
     private fun startNextPrayerCountDown() {
         countdownJob?.cancel()
@@ -43,26 +51,21 @@ class MainViewModel(
                     ((remainingTime / 1000) % 3600) / 60,
                     (remainingTime / 1000) % 60
                 )
-
-                // Update only the countdown flow, not the main state
                 _countdownFlow.value = "Next prayer in: $formattedTime"
-
                 delay(1000L)
                 remainingTime -= 1000L
             }
         }
     }
+
     override fun onCleared() {
         super.onCleared()
         countdownJob?.cancel()
     }
 
-
     private val _uiState = MutableStateFlow(UiState())
     val uiState = _uiState
-        .onStart {
-            loadData()
-        }
+        .onStart { loadData() }
         .stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5000L),
@@ -89,18 +92,34 @@ class MainViewModel(
 
     fun actionTrigger(action: UIAction) {
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true) }
-//            delay(2000)
             when (action) {
                 is UIAction.SelectCity -> {
+                    _uiState.update { it.copy(isLoading = true, currentCity = action.city) }
                     viewModelScope.launch {
+                        handleResult(
+                            result = loadPrayerTimesForCityUseCase(action.city),
+                            onSuccess = { data ->
+                                _uiState.update { state ->
+                                    state.copy(
+                                        isLoading = false,
+                                        prayers = data.prayers,
+                                        nextPray = data.nextPray,
+                                        nextPrayTime = data.nextPrayTime
+                                    )
+                                }
+                                viewModelScope.launch {
+                                _citySelectedEvent.emit(Unit)
 
-                        _uiState.update { uiStates ->
-                            uiStates.copy(
-                                isLoading = false,
-                                currentCity = action.city,
-                            )
-                        }
+                                }
+                                actionTrigger(UIAction.StartNextPrayerCountDown)
+                            },
+                            onError = { error ->
+                                _uiState.update { it.copy(isLoading = false, error = error) }
+                                viewModelScope.launch {
+                                    _citySelectedEvent.emit(Unit)
+                                }
+                            }
+                        )
                     }
                 }
 
@@ -128,12 +147,7 @@ class MainViewModel(
                             onError = {
                                 viewModelScope.launch {
                                     cancel()
-                                    _uiState.emit(
-                                        UiState(
-                                            isLoading = false,
-                                            error = it
-                                        )
-                                    )
+                                    _uiState.emit(UiState(isLoading = false, error = it))
                                 }
                             }
                         )
@@ -141,7 +155,6 @@ class MainViewModel(
                     }
                 }
             }
-
         }
     }
 

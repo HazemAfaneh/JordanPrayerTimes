@@ -40,7 +40,7 @@ fun List<DailyPrayerRemoteModel>.findTodayPrayers(): DailyPrayerRemoteModel? {
 // so we enforce ascending order: if a time is <= the previous, it must be PM — add 12 hours.
 fun DailyPrayerRemoteModel.toPrayerUiModels(): List<PrayerUiModel> {
     val rawTimes = listOf(fajr, sunrise, dhuhr, asr, maghrib, isha)
-    val names = listOf("Fajr", "Sunrise", "Dhuhr", "Asr", "Maghrib", "Isha")
+    val names = listOf("الفجر", "الشروق", "الظهر", "العصر", "المغرب", "العشاء")
 
     var lastMinutes = 0
     return rawTimes.mapIndexedNotNull { index, timeStr ->
@@ -81,5 +81,5 @@ fun List<PrayerUiModel>.nextPrayerInfo(): Pair<String, Long> {
         if (prayerMs > now) prayer.name to prayerMs else null
     }.minByOrNull { (_, ms) -> ms }
 
-    return next ?: ((firstOrNull()?.name ?: "Fajr") to (midnight + 24 * 3600 * 1000L))
+    return next ?: ((firstOrNull()?.name ?: "الفجر") to (midnight + 24 * 3600 * 1000L))
 }

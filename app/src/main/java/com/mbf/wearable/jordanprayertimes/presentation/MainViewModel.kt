@@ -50,8 +50,8 @@ class MainViewModel(
         val error: String? = null,
         val prayers: List<PrayerUiModel> = emptyList(),
         val currentDate: String = java.text.SimpleDateFormat(
-            "EEEE, yyyy-MM-dd",
-            java.util.Locale.getDefault()
+            "EEEE، yyyy-MM-dd",
+            java.util.Locale("ar")
         ).format(java.util.Date()),
         val nextPray: String = "",
         val nextPrayTime: Long = System.currentTimeMillis() + (60 * 60 * 1000L),

@@ -77,7 +77,7 @@ fun SettingsScreen(onNavigateBack: () -> Unit) {
 
             item(key = "cities_header") {
                 Text(
-                    text = "Cities",
+                    text = "المدن",
                     style = MaterialTheme.typography.title3
                 )
             }
@@ -114,7 +114,7 @@ private fun NotificationToggle(
         onCheckedChange = onToggle,
         label = {
             Text(
-                "Enable Notifications",
+                "تفعيل الإشعارات",
                 fontSize = 12.sp
             )
         },

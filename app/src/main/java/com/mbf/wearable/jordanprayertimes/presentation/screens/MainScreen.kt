@@ -109,7 +109,7 @@ private fun CityHeader(
 private fun NextPrayerText(nextPray: String) {
     if (nextPray.isEmpty()) return
     Text(
-        text = "Next: $nextPray",
+        text = "التالي: $nextPray",
         style = MaterialTheme.typography.body1,
         color = Color.Gray,
         modifier = Modifier.padding(bottom = 2.dp)

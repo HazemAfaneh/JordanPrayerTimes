@@ -10,6 +10,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.wear.compose.material.MaterialTheme
 import androidx.wear.compose.material.TimeText
 import androidx.wear.compose.navigation.SwipeDismissableNavHost
@@ -34,7 +36,10 @@ class MainActivity : ComponentActivity() {
         val startDestination = if (hasSavedCity) "home_screen" else "settings_screen"
 
         setContent {
-            CompositionLocalProvider(LocalAppSharedState provides viewModel) {
+            CompositionLocalProvider(
+                LocalAppSharedState provides viewModel,
+                LocalLayoutDirection provides LayoutDirection.Rtl
+            ) {
                 JordanPrayerTimesTheme {
                     Box(
                         modifier = Modifier

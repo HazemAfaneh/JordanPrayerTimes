@@ -1,6 +1,7 @@
 package com.mbf.wearable.jordanprayertimes.presentation
 
 import androidx.lifecycle.viewModelScope
+import com.mbf.wearable.jordanprayertimes.data.local.CityPreferences
 import com.mbf.wearable.jordanprayertimes.data.ui.CityUiModel
 import com.mbf.wearable.jordanprayertimes.repositories.LoadCitiesRepo
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -11,14 +12,13 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class SettingsViewModel(
-    private val loadCitiesRepo: LoadCitiesRepo
+    private val loadCitiesRepo: LoadCitiesRepo,
+    private val cityPreferences: CityPreferences
 ) : BaseViewModel() {
 
     private val _uiState = MutableStateFlow(UiState())
     val uiState = _uiState
-        .onStart {
-            loadCities()
-        }
+        .onStart { actionTrigger(UIAction.LoadCities) }
         .stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5000L),
@@ -34,10 +34,6 @@ class SettingsViewModel(
         val notificationsEnabled: Boolean = false
     )
 
-    private fun loadCities() {
-        actionTrigger(UIAction.LoadCities)
-    }
-
     fun actionTrigger(action: UIAction) {
         viewModelScope.launch {
             when (action) {
@@ -47,36 +43,29 @@ class SettingsViewModel(
                         handleResult(
                             result = loadCitiesRepo(),
                             onSuccess = { cities ->
-                                _uiState.update { uiState ->
-                                    uiState.copy(
+                                val savedCity = cityPreferences.getSavedCity()
+                                val preSelected = cities.find { it.id == savedCity?.id }
+                                _uiState.update { state ->
+                                    state.copy(
                                         isLoading = false,
                                         cities = cities,
-                                        selectedCity = cities.firstOrNull()
+                                        selectedCity = preSelected
                                     )
                                 }
                             },
                             onError = { error ->
-                                _uiState.update {
-                                    it.copy(
-                                        isLoading = false,
-                                        error = error
-                                    )
-                                }
+                                _uiState.update { it.copy(isLoading = false, error = error) }
                             }
                         )
                     }
                 }
 
                 is UIAction.SelectCity -> {
-                    _uiState.update {
-                        it.copy(selectedCity = action.city)
-                    }
+                    _uiState.update { it.copy(selectedCity = action.city) }
                 }
 
                 is UIAction.ToggleNotifications -> {
-                    _uiState.update {
-                        it.copy(notificationsEnabled = action.enabled)
-                    }
+                    _uiState.update { it.copy(notificationsEnabled = action.enabled) }
                 }
             }
         }

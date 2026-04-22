@@ -8,14 +8,15 @@ import org.koin.dsl.module
 val viewModelModule = module {
     viewModel {
         MainViewModel(
-            loadInitialHomeScreenDataUseCase = get(),
-            loadPrayerTimesForCityUseCase = get()
+            loadPrayerTimesForCityUseCase = get(),
+            cityPreferences = get()
         )
     }
 
     viewModel {
         SettingsViewModel(
-            loadCitiesRepo = get()
+            loadCitiesRepo = get(),
+            cityPreferences = get()
         )
     }
 }

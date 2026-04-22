@@ -135,15 +135,19 @@ class MainViewModel(
         countdownJob = viewModelScope.launch {
             var remainingTime = _uiState.value.nextPrayTime - System.currentTimeMillis()
             while (remainingTime > 0) {
-                _countdownFlow.value = String.format(
-                    Locale.getDefault(),
-                    "Next prayer in: %02d:%02d",
-                    ((remainingTime / 1000) % 3600) / 60,
-                    (remainingTime / 1000) % 60
-                )
+                val totalSeconds = remainingTime / 1000
+                val hours = totalSeconds / 3600
+                val minutes = (totalSeconds % 3600) / 60
+                val seconds = totalSeconds % 60
+                _countdownFlow.value = if (hours > 0) {
+                    String.format(Locale.getDefault(), "%02d:%02d:%02d", hours, minutes, seconds)
+                } else {
+                    String.format(Locale.getDefault(), "%02d:%02d", minutes, seconds)
+                }
                 delay(1000L)
                 remainingTime -= 1000L
             }
+            _countdownFlow.value = ""
         }
     }
 

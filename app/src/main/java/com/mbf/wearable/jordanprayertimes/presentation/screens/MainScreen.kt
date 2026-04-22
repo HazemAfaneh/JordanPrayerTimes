@@ -103,21 +103,23 @@ private fun CityHeader(
 
 @Composable
 private fun NextPrayerText(nextPray: String) {
+    if (nextPray.isEmpty()) return
     Text(
-        text = nextPray,
+        text = "Next: $nextPray",
         style = MaterialTheme.typography.body1,
         color = Color.Gray,
-        modifier = Modifier.padding(bottom = 4.dp)
+        modifier = Modifier.padding(bottom = 2.dp)
     )
 }
 
 @Composable
 private fun CountdownDisplay(countdownText: String) {
+    if (countdownText.isEmpty()) return
     Text(
         text = countdownText,
         style = MaterialTheme.typography.body1,
-        color = Color.Gray,
-        modifier = Modifier.padding(bottom = 16.dp)
+        color = Color.White,
+        modifier = Modifier.padding(bottom = 12.dp)
     )
 }
 

@@ -1,5 +1,6 @@
 package com.mbf.wearable.jordanprayertimes.data.remote.datasource
 
+import com.mbf.wearable.jordanprayertimes.BuildConfig
 import com.mbf.wearable.jordanprayertimes.ResultData
 import com.mbf.wearable.jordanprayertimes.data.remote.CitiesResponse
 import com.mbf.wearable.jordanprayertimes.data.remote.call
@@ -16,10 +17,7 @@ class CitiesRemoteDataSourceImp(
         return httpClient.call {
             url("https://api.github.com/repos/mbanifawaz/Jordan_Prayer_Times_API_Data/contents/cities/cities.json")
             method = HttpMethod.Get
-            header(
-                "Authorization",
-                "Bearer REMOVED_TOKEN"
-            )
+            header("Authorization", "Bearer ${BuildConfig.GITHUB_TOKEN}")
             header("Accept", "application/vnd.github.raw+json")
         }
     }

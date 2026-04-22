@@ -5,6 +5,10 @@ plugins {
     kotlin("plugin.serialization") version "2.0.0"
 }
 
+val localProps = java.util.Properties().apply {
+    rootProject.file("local.properties").takeIf { it.exists() }?.inputStream()?.use { load(it) }
+}
+
 android {
     namespace = "com.mbf.wearable.jordanprayertimes"
     compileSdk = 34
@@ -15,7 +19,7 @@ android {
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
-
+        buildConfigField("String", "GITHUB_TOKEN", "\"${localProps.getProperty("github_token", "")}\"")
     }
 
     buildTypes {

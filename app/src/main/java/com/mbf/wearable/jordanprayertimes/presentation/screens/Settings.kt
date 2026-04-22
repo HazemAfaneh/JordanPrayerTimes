@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
@@ -31,41 +30,27 @@ import com.mbf.wearable.jordanprayertimes.data.ui.CityUiModel
 import com.mbf.wearable.jordanprayertimes.presentation.SettingsViewModel
 import org.koin.androidx.compose.koinViewModel
 
-/**
- * Settings screen with loading indicator
- * Shows a circular progress bar overlay while fetching cities data from the API
- */
 @Composable
 fun SettingsScreen() {
     val viewModel = koinViewModel<SettingsViewModel>()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val listState = rememberScalingLazyListState()
 
-    // Memoize values to prevent unnecessary recompositions
-    val isLoading = remember(uiState.isLoading) { uiState.isLoading }
-    val cities = remember(uiState.cities) { uiState.cities }
-    val selectedCityId = remember(uiState.selectedCity?.id) { uiState.selectedCity?.id ?: 0 }
-    val notificationsEnabled =
-        remember(uiState.notificationsEnabled) { uiState.notificationsEnabled }
-
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colors.background)
     ) {
-        // Main content
         ScalingLazyColumn(
             modifier = Modifier.fillMaxSize(),
             state = listState
         ) {
             item(key = "notifications_toggle") {
                 NotificationToggle(
-                    notificationsEnabled = notificationsEnabled,
+                    notificationsEnabled = uiState.notificationsEnabled,
                     onToggle = { enabled ->
                         viewModel.actionTrigger(
-                            SettingsViewModel.UIAction.ToggleNotifications(
-                                enabled
-                            )
+                            SettingsViewModel.UIAction.ToggleNotifications(enabled)
                         )
                     }
                 )
@@ -78,18 +63,17 @@ fun SettingsScreen() {
             item(key = "cities_header") {
                 Text(
                     text = "Cities",
-                    modifier = Modifier,
                     style = MaterialTheme.typography.title3
                 )
             }
 
             items(
-                items = cities,
+                items = uiState.cities,
                 key = { city -> city.id }
             ) { city ->
                 CityChip(
                     city = city,
-                    isSelected = city.id == selectedCityId,
+                    isSelected = city.id == uiState.selectedCity?.id,
                     onCitySelected = {
                         viewModel.actionTrigger(SettingsViewModel.UIAction.SelectCity(city))
                     }
@@ -97,16 +81,12 @@ fun SettingsScreen() {
             }
         }
 
-        // Loading overlay
-        if (isLoading) {
+        if (uiState.isLoading) {
             LoadingOverlay()
         }
     }
 }
 
-/**
- * Loading overlay with circular progress indicator
- */
 @Composable
 private fun LoadingOverlay() {
     Box(
@@ -123,9 +103,6 @@ private fun LoadingOverlay() {
     }
 }
 
-/**
- * Notification toggle - isolated to prevent recomposition
- */
 @Composable
 private fun NotificationToggle(
     notificationsEnabled: Boolean,
@@ -155,9 +132,6 @@ private fun NotificationToggle(
     )
 }
 
-/**
- * Divider - isolated as a separate composable
- */
 @Composable
 private fun SettingsDivider() {
     Box(
@@ -165,38 +139,27 @@ private fun SettingsDivider() {
             .fillMaxWidth()
             .height(1.dp)
             .background(MaterialTheme.colors.surface)
-            .padding(vertical = 16.dp)
     )
 }
 
-/**
- * City chip - isolated and optimized with stable parameters
- */
 @Composable
 private fun CityChip(
     city: CityUiModel,
     isSelected: Boolean,
     onCitySelected: () -> Unit
 ) {
-    // Remember city properties to avoid recomposition
-    val cityName = remember(city.id) { city.name }
-
     Chip(
         modifier = Modifier.fillMaxWidth(),
         onClick = onCitySelected,
         label = {
             Text(
-                text = cityName,
+                text = city.name,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
         },
         colors = ChipDefaults.chipColors(
-            backgroundColor = if (isSelected) {
-                Color.Cyan.copy(alpha = 0.8f)
-            } else {
-                Color.Gray
-            }
+            backgroundColor = if (isSelected) Color.Cyan.copy(alpha = 0.8f) else Color.Gray
         )
     )
 }

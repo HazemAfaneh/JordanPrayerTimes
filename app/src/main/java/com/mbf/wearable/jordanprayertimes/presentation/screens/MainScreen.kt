@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -26,27 +25,21 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.wear.compose.foundation.lazy.ScalingLazyColumn
+import androidx.wear.compose.foundation.lazy.items
+import androidx.wear.compose.foundation.lazy.rememberScalingLazyListState
 import androidx.wear.compose.material.MaterialTheme
 import androidx.wear.compose.material.Text
 import com.mbf.wearable.jordanprayertimes.data.ui.PrayerUiModel
 import com.mbf.wearable.jordanprayertimes.presentation.LocalAppSharedState
-import com.mbf.wearable.jordanprayertimes.presentation.MainViewModel
 
 @Composable
 fun MainScreen(onScreenNavigation: () -> Unit) {
     val viewModel = LocalAppSharedState.current ?: return
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val countdownText by viewModel.countdownFlow.collectAsStateWithLifecycle()
+    val listState = rememberScalingLazyListState()
 
-    // Extract stable values to prevent unnecessary recompositions
-    val currentCityName = remember(uiState.currentCity) { uiState.currentCity.name }
-    val nextPray = remember(uiState.nextPray) { uiState.nextPray }
-    val currentDate = remember(uiState.currentDate) { uiState.currentDate }
-    val prayers = remember(uiState.prayers) { uiState.prayers }
-
-    // Memoize prayer rows to avoid recalculation on every recomposition
-    val prayerRows by remember(prayers) {
-        derivedStateOf { prayers.chunked(3) }
-    }
+    val prayerRows = remember(uiState.prayers) { uiState.prayers.chunked(3) }
 
     Box(
         modifier = Modifier
@@ -56,21 +49,22 @@ fun MainScreen(onScreenNavigation: () -> Unit) {
     ) {
         ScalingLazyColumn(
             modifier = Modifier.fillMaxSize(),
+            state = listState,
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             item(key = "city_header") {
                 CityHeader(
-                    cityName = currentCityName,
+                    cityName = uiState.currentCity.name,
                     onScreenNavigation = onScreenNavigation
                 )
             }
 
             item(key = "next_prayer") {
-                NextPrayerText(nextPray = nextPray)
+                NextPrayerText(nextPray = uiState.nextPray)
             }
 
             item(key = "countdown") {
-                CountdownDisplay(viewModel = viewModel)
+                CountdownDisplay(countdownText = countdownText)
             }
 
             item(key = "divider") {
@@ -78,19 +72,19 @@ fun MainScreen(onScreenNavigation: () -> Unit) {
             }
 
             item(key = "current_date") {
-                CurrentDateText(currentDate = currentDate)
+                CurrentDateText(currentDate = uiState.currentDate)
             }
 
-            item(key = "prayers_grid") {
-                PrayersGrid(prayerRows = prayerRows)
+            items(
+                items = prayerRows,
+                key = { row -> row.first().id }
+            ) { row ->
+                PrayerRow(prayers = row)
             }
         }
     }
 }
 
-/**
- * City header with navigation - isolated to prevent recomposition
- */
 @Composable
 private fun CityHeader(
     cityName: String,
@@ -106,9 +100,6 @@ private fun CityHeader(
     )
 }
 
-/**
- * Next prayer name display - isolated to prevent recomposition
- */
 @Composable
 private fun NextPrayerText(nextPray: String) {
     Text(
@@ -119,13 +110,8 @@ private fun NextPrayerText(nextPray: String) {
     )
 }
 
-/**
- * Countdown display - only this composable recomposes when countdown updates
- */
 @Composable
-private fun CountdownDisplay(viewModel: MainViewModel) {
-    val countdownText by viewModel.countdownFlow.collectAsStateWithLifecycle()
-
+private fun CountdownDisplay(countdownText: String) {
     Text(
         text = countdownText,
         style = MaterialTheme.typography.body1,
@@ -134,9 +120,6 @@ private fun CountdownDisplay(viewModel: MainViewModel) {
     )
 }
 
-/**
- * Divider - isolated as a separate composable
- */
 @Composable
 private fun Divider() {
     Box(
@@ -144,13 +127,9 @@ private fun Divider() {
             .fillMaxWidth()
             .height(1.dp)
             .background(MaterialTheme.colors.surface)
-            .padding(vertical = 16.dp)
     )
 }
 
-/**
- * Current date display - isolated to prevent recomposition
- */
 @Composable
 private fun CurrentDateText(currentDate: String) {
     Text(
@@ -160,24 +139,6 @@ private fun CurrentDateText(currentDate: String) {
     )
 }
 
-/**
- * Prayers grid - isolated and optimized with stable parameters
- */
-@Composable
-private fun PrayersGrid(prayerRows: List<List<PrayerUiModel>>) {
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        prayerRows.forEach { row ->
-            PrayerRow(prayers = row)
-        }
-    }
-}
-
-/**
- * Single row of prayer items - isolated to prevent recomposition
- */
 @Composable
 private fun PrayerRow(prayers: List<PrayerUiModel>) {
     Row(
@@ -193,15 +154,8 @@ private fun PrayerRow(prayers: List<PrayerUiModel>) {
     }
 }
 
-/**
- * Single prayer item - optimized with stable parameters
- */
 @Composable
 private fun CircularItem(prayer: PrayerUiModel) {
-    // Remember the prayer properties to avoid recomposition when parent recomposes
-    val prayerName = remember(prayer.id) { prayer.name }
-    val prayerTime = remember(prayer.id) { prayer.prayerTime }
-
     Box(
         modifier = Modifier
             .size(55.dp)
@@ -215,8 +169,7 @@ private fun CircularItem(prayer: PrayerUiModel) {
             verticalArrangement = Arrangement.Center
         ) {
             Text(
-                text = prayerName,
-                color = Color.Cyan,
+                text = prayer.name,
                 style = TextStyle(
                     fontSize = 10.sp,
                     color = Color.White
@@ -224,8 +177,7 @@ private fun CircularItem(prayer: PrayerUiModel) {
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = prayerTime,
-                color = Color.White,
+                text = prayer.prayerTime,
                 style = TextStyle(
                     fontSize = 9.sp,
                     color = Color.White

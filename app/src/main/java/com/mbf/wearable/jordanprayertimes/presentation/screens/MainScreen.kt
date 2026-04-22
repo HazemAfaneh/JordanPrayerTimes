@@ -83,6 +83,10 @@ fun MainScreen(onScreenNavigation: () -> Unit) {
                 PrayerRow(prayers = row)
             }
         }
+
+        if (uiState.isLoading) {
+            LoadingOverlay()
+        }
     }
 }
 

@@ -22,7 +22,6 @@ import androidx.wear.compose.foundation.lazy.items
 import androidx.wear.compose.foundation.lazy.rememberScalingLazyListState
 import androidx.wear.compose.material.Chip
 import androidx.wear.compose.material.ChipDefaults
-import androidx.wear.compose.material.CircularProgressIndicator
 import androidx.wear.compose.material.MaterialTheme
 import androidx.wear.compose.material.Switch
 import androidx.wear.compose.material.SwitchDefaults
@@ -102,22 +101,6 @@ fun SettingsScreen(onNavigateBack: () -> Unit) {
         if (uiState.isLoading || mainUiState.isLoading) {
             LoadingOverlay()
         }
-    }
-}
-
-@Composable
-private fun LoadingOverlay() {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colors.background.copy(alpha = 0.7f)),
-        contentAlignment = androidx.compose.ui.Alignment.Center
-    ) {
-        CircularProgressIndicator(
-            indicatorColor = Color.Cyan,
-            strokeWidth = 4.dp,
-            modifier = Modifier.padding(16.dp)
-        )
     }
 }
 

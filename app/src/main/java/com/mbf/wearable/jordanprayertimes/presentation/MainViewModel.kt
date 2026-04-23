@@ -1,7 +1,11 @@
 package com.mbf.wearable.jordanprayertimes.presentation
 
+import android.app.Application
+import android.content.ComponentName
 import androidx.compose.runtime.compositionLocalOf
 import androidx.lifecycle.viewModelScope
+import androidx.wear.watchface.complications.datasource.ComplicationDataSourceUpdateRequester
+import com.mbf.wearable.jordanprayertimes.complication.MainComplicationService
 import com.mbf.wearable.jordanprayertimes.data.local.CityPreferences
 import com.mbf.wearable.jordanprayertimes.data.ui.CityUiModel
 import com.mbf.wearable.jordanprayertimes.data.ui.PrayerUiModel
@@ -26,7 +30,8 @@ val LocalAppSharedState = compositionLocalOf<MainViewModel?> { null }
 class MainViewModel(
     private val loadPrayerTimesForCityUseCase: LoadPrayerTimesForCityUseCase,
     private val cityPreferences: CityPreferences,
-    private val prayerAlarmScheduler: PrayerAlarmScheduler
+    private val prayerAlarmScheduler: PrayerAlarmScheduler,
+    private val application: Application
 ) : BaseViewModel() {
 
     private var countdownJob: Job? = null
@@ -138,6 +143,13 @@ class MainViewModel(
         if (cityPreferences.isNotificationsEnabled()) {
             prayerAlarmScheduler.schedulePrayerAlarms(prayers)
         }
+        refreshComplication()
+    }
+
+    private fun refreshComplication() {
+        ComplicationDataSourceUpdateRequester
+            .create(application, ComponentName(application, MainComplicationService::class.java))
+            .requestUpdateAll()
     }
 
     private fun startNextPrayerCountDown() {

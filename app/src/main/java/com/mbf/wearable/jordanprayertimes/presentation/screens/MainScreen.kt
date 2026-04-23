@@ -31,8 +31,8 @@ import androidx.wear.compose.foundation.lazy.rememberScalingLazyListState
 import androidx.wear.compose.material.MaterialTheme
 import androidx.wear.compose.material.Text
 import com.mbf.wearable.jordanprayertimes.data.ui.PrayerUiModel
+import com.mbf.wearable.jordanprayertimes.helper.to12hFormat
 import com.mbf.wearable.jordanprayertimes.presentation.LocalAppSharedState
-import java.util.Locale
 
 @Composable
 fun MainScreen(onScreenNavigation: () -> Unit) {
@@ -161,15 +161,6 @@ private fun PrayerRow(prayers: List<PrayerUiModel>) {
             }
         }
     }
-}
-
-private fun String.to12hFormat(): String {
-    val parts = split(":")
-    if (parts.size < 2) return this
-    val h = parts[0].trim().toIntOrNull() ?: return this
-    val m = parts[1].trim().toIntOrNull() ?: return this
-    val hour12 = when { h == 0 -> 12; h > 12 -> h - 12; else -> h }
-    return String.format(Locale.US, "%d:%02d", hour12, m)
 }
 
 @Composable

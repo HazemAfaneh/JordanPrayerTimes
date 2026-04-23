@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -99,8 +100,9 @@ private fun CityHeader(
         text = cityName,
         style = MaterialTheme.typography.title1,
         color = Color.White,
+        textAlign = TextAlign.Center,
         modifier = Modifier
-            .padding(bottom = 8.dp)
+            .padding(vertical = 8.dp)
             .clickable { onScreenNavigation() }
     )
 }

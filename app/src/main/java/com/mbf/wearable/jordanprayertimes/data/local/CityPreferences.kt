@@ -23,9 +23,17 @@ class CityPreferences(context: Context) {
 
     fun hasSavedCity(): Boolean = prefs.getInt(KEY_CITY_ID, -1) != -1
 
+    fun saveNotificationsEnabled(enabled: Boolean) {
+        prefs.edit().putBoolean(KEY_NOTIFICATIONS_ENABLED, enabled).apply()
+    }
+
+    fun isNotificationsEnabled(): Boolean =
+        prefs.getBoolean(KEY_NOTIFICATIONS_ENABLED, true)
+
     companion object {
         private const val PREFS_NAME = "city_prefs"
         private const val KEY_CITY_ID = "city_id"
         private const val KEY_CITY_NAME = "city_name"
+        private const val KEY_NOTIFICATIONS_ENABLED = "notifications_enabled"
     }
 }

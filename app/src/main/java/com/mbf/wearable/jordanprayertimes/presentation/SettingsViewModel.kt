@@ -3,6 +3,7 @@ package com.mbf.wearable.jordanprayertimes.presentation
 import androidx.lifecycle.viewModelScope
 import com.mbf.wearable.jordanprayertimes.data.local.CityPreferences
 import com.mbf.wearable.jordanprayertimes.data.ui.CityUiModel
+import com.mbf.wearable.jordanprayertimes.notification.PrayerAlarmScheduler
 import com.mbf.wearable.jordanprayertimes.repositories.LoadCitiesRepo
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -13,7 +14,8 @@ import kotlinx.coroutines.launch
 
 class SettingsViewModel(
     private val loadCitiesRepo: LoadCitiesRepo,
-    private val cityPreferences: CityPreferences
+    private val cityPreferences: CityPreferences,
+    private val prayerAlarmScheduler: PrayerAlarmScheduler
 ) : BaseViewModel() {
 
     private val _uiState = MutableStateFlow(UiState())
@@ -49,7 +51,8 @@ class SettingsViewModel(
                                     state.copy(
                                         isLoading = false,
                                         cities = cities,
-                                        selectedCity = preSelected
+                                        selectedCity = preSelected,
+                                        notificationsEnabled = cityPreferences.isNotificationsEnabled()
                                     )
                                 }
                             },
@@ -66,6 +69,8 @@ class SettingsViewModel(
 
                 is UIAction.ToggleNotifications -> {
                     _uiState.update { it.copy(notificationsEnabled = action.enabled) }
+                    cityPreferences.saveNotificationsEnabled(action.enabled)
+                    if (!action.enabled) prayerAlarmScheduler.cancelAllAlarms()
                 }
             }
         }

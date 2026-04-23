@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.mbf.wearable.jordanprayertimes.data.local.CityPreferences
 import com.mbf.wearable.jordanprayertimes.data.ui.CityUiModel
 import com.mbf.wearable.jordanprayertimes.data.ui.PrayerUiModel
+import com.mbf.wearable.jordanprayertimes.notification.PrayerAlarmScheduler
 import com.mbf.wearable.jordanprayertimes.usecase.LoadPrayerTimesForCityUseCase
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -24,7 +25,8 @@ val LocalAppSharedState = compositionLocalOf<MainViewModel?> { null }
 
 class MainViewModel(
     private val loadPrayerTimesForCityUseCase: LoadPrayerTimesForCityUseCase,
-    private val cityPreferences: CityPreferences
+    private val cityPreferences: CityPreferences,
+    private val prayerAlarmScheduler: PrayerAlarmScheduler
 ) : BaseViewModel() {
 
     private var countdownJob: Job? = null
@@ -81,6 +83,7 @@ class MainViewModel(
                                             nextPrayTime = data.nextPrayTime
                                         )
                                     }
+                                    scheduleAlarmsIfEnabled(data.prayers)
                                     actionTrigger(UIAction.StartNextPrayerCountDown)
                                 },
                                 onError = { error ->
@@ -106,6 +109,7 @@ class MainViewModel(
                                         nextPrayTime = data.nextPrayTime
                                     )
                                 }
+                                scheduleAlarmsIfEnabled(data.prayers)
                                 cityPreferences.saveCity(action.city)
                                 viewModelScope.launch {
                                     _citySelectedEvent.emit(Unit)
@@ -127,6 +131,12 @@ class MainViewModel(
                     startNextPrayerCountDown()
                 }
             }
+        }
+    }
+
+    private fun scheduleAlarmsIfEnabled(prayers: List<PrayerUiModel>) {
+        if (cityPreferences.isNotificationsEnabled()) {
+            prayerAlarmScheduler.schedulePrayerAlarms(prayers)
         }
     }
 

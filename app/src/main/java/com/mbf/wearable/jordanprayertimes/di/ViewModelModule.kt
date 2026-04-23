@@ -9,14 +9,16 @@ val viewModelModule = module {
     viewModel {
         MainViewModel(
             loadPrayerTimesForCityUseCase = get(),
-            cityPreferences = get()
+            cityPreferences = get(),
+            prayerAlarmScheduler = get()
         )
     }
 
     viewModel {
         SettingsViewModel(
             loadCitiesRepo = get(),
-            cityPreferences = get()
+            cityPreferences = get(),
+            prayerAlarmScheduler = get()
         )
     }
 }

@@ -1,6 +1,7 @@
 package com.mbf.wearable.jordanprayertimes.di
 
 import com.mbf.wearable.jordanprayertimes.data.local.CityPreferences
+import com.mbf.wearable.jordanprayertimes.data.local.MonthlyPrayerCache
 import com.mbf.wearable.jordanprayertimes.repositories.LoadCitiesRepo
 import com.mbf.wearable.jordanprayertimes.repositories.LoadPrayer
 import com.mbf.wearable.jordanprayertimes.repositories.LoadPrayerTimesForCityRepo
@@ -12,6 +13,7 @@ import org.koin.dsl.module
 
 val repositoryModule = module {
     single { CityPreferences(androidContext()) }
+    single { MonthlyPrayerCache(androidContext()) }
 
     single<LoadCitiesRepo> {
         LoadCitiesRepoImp(citiesRemoteDataSource = get())
@@ -22,6 +24,9 @@ val repositoryModule = module {
     }
 
     single<LoadPrayerTimesForCityRepo> {
-        LoadPrayerTimesForCityRepoImp(prayerTimesRemoteDataSource = get())
+        LoadPrayerTimesForCityRepoImp(
+            prayerTimesRemoteDataSource = get(),
+            monthlyPrayerCache = get()
+        )
     }
 }

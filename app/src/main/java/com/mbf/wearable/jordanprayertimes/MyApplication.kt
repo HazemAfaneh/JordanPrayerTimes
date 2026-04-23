@@ -7,6 +7,7 @@ import com.mbf.wearable.jordanprayertimes.di.repositoryModule
 import com.mbf.wearable.jordanprayertimes.di.useCaseModule
 import com.mbf.wearable.jordanprayertimes.di.viewModelModule
 import com.mbf.wearable.jordanprayertimes.notification.NotificationHelper
+import com.mbf.wearable.jordanprayertimes.worker.PrayerDataRefreshScheduler
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.startKoin
 
@@ -26,5 +27,6 @@ class MyApplication : Application() {
         }
 
         NotificationHelper(this).createChannel()
+        PrayerDataRefreshScheduler.ensureScheduled(this)
     }
 }

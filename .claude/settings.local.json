@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(xargs sed *)",
+      "Bash(mkdir -p /Users/hazemafaneh/StudioProjects/prayer/JordanPrayerTimes/app/src/main/java/com/mbf/jordan_prayer_times_app)",
+      "Bash(cp -r /Users/hazemafaneh/StudioProjects/prayer/JordanPrayerTimes/app/src/main/java/com/mbf/wearable/jordanprayertimes/. /Users/hazemafaneh/StudioProjects/prayer/JordanPrayerTimes/app/src/main/java/com/mbf/jordan_prayer_times_app/)"
+    ]
+  }
+}

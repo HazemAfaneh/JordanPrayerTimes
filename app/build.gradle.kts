@@ -12,15 +12,15 @@ val localProps = Properties().apply {
 }
 
 android {
-    namespace = "com.mbf.wearable.jordanprayertimes"
+    namespace = "com.mbf.jordan_prayer_times_app"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.mbf.wearable.jordanprayertimes"
+        applicationId = "com.mbf.jordan_prayer_times_app"
         minSdk = 30
         targetSdk = 34
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 12
+        versionName = "2.3.0"
         buildConfigField("String", "GITHUB_TOKEN", "\"${localProps.getProperty("github_token", "")}\"")
     }
 

@@ -14,3 +14,5 @@
 .cxx
 local.properties
 /.idea/ChatHistory_schema_v3.xml
+key.properties
+gradle.properties

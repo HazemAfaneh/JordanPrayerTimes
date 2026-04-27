@@ -17,7 +17,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.wear.compose.material.MaterialTheme
-import androidx.wear.compose.material.TimeText
 import androidx.wear.compose.navigation.SwipeDismissableNavHost
 import androidx.wear.compose.navigation.composable
 import androidx.wear.compose.navigation.rememberSwipeDismissableNavController
@@ -62,7 +61,6 @@ class MainActivity : ComponentActivity() {
                             .background(MaterialTheme.colors.background),
                         contentAlignment = Alignment.Center
                     ) {
-                        TimeText()
                         val navController = rememberSwipeDismissableNavController()
                         SwipeDismissableNavHost(
                             navController = navController,

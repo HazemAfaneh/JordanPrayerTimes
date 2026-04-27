@@ -15,11 +15,23 @@ android {
     namespace = "com.mbf.jordan_prayer_times_app"
     compileSdk = 34
 
+    signingConfigs {
+        create("release") {
+            val props = Properties().apply {
+                rootProject.file("key.properties").takeIf { it.exists() }?.inputStream()?.use { load(it) }
+            }
+            storeFile = file(props.getProperty("storeFile", ""))
+            storePassword = props.getProperty("storePassword", "")
+            keyAlias = props.getProperty("keyAlias", "")
+            keyPassword = props.getProperty("keyPassword", "")
+        }
+    }
+
     defaultConfig {
         applicationId = "com.mbf.jordan_prayer_times_app"
         minSdk = 30
         targetSdk = 34
-        versionCode = 12
+        versionCode = 13
         versionName = "2.3.0"
         buildConfigField("String", "GITHUB_TOKEN", "\"${localProps.getProperty("github_token", "")}\"")
     }
@@ -32,7 +44,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.getByName("release")
         }
         // Use this variant for profiling on real hardware — release perf, debuggable
         create("benchmark") {

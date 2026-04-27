@@ -29,7 +29,12 @@ import androidx.wear.compose.foundation.lazy.ScalingLazyColumn
 import androidx.wear.compose.foundation.lazy.items
 import androidx.wear.compose.foundation.lazy.rememberScalingLazyListState
 import androidx.wear.compose.material.MaterialTheme
+import androidx.wear.compose.material.PositionIndicator
+import androidx.wear.compose.material.Scaffold
 import androidx.wear.compose.material.Text
+import androidx.wear.compose.material.TimeText
+import androidx.wear.compose.material.Vignette
+import androidx.wear.compose.material.VignettePosition
 import com.mbf.jordan_prayer_times_app.data.ui.PrayerUiModel
 import com.mbf.jordan_prayer_times_app.helper.to12hFormat
 import com.mbf.jordan_prayer_times_app.presentation.LocalAppSharedState
@@ -43,50 +48,56 @@ fun MainScreen(onScreenNavigation: () -> Unit) {
 
     val prayerRows = remember(uiState.prayers) { uiState.prayers.chunked(3) }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colors.background),
-        contentAlignment = Alignment.Center
+    Scaffold(
+        timeText = { TimeText() },
+        vignette = { Vignette(vignettePosition = VignettePosition.TopAndBottom) },
+        positionIndicator = { PositionIndicator(scalingLazyListState = listState) }
     ) {
-        ScalingLazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            state = listState,
-            horizontalAlignment = Alignment.CenterHorizontally,
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colors.background),
+            contentAlignment = Alignment.Center
         ) {
-            item(key = "city_header") {
-                CityHeader(
-                    cityName = uiState.currentCity.name,
-                    onScreenNavigation = onScreenNavigation
-                )
+            ScalingLazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                state = listState,
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                item(key = "city_header") {
+                    CityHeader(
+                        cityName = uiState.currentCity.name,
+                        onScreenNavigation = onScreenNavigation
+                    )
+                }
+
+                item(key = "next_prayer") {
+                    NextPrayerText(nextPray = uiState.nextPray)
+                }
+
+                item(key = "countdown") {
+                    CountdownDisplay(countdownText = countdownText)
+                }
+
+                item(key = "divider") {
+                    Divider()
+                }
+
+                item(key = "current_date") {
+                    CurrentDateText(currentDate = uiState.currentDate)
+                }
+
+                items(
+                    items = prayerRows,
+                    key = { row -> row.first().id }
+                ) { row ->
+                    PrayerRow(prayers = row)
+                }
             }
 
-            item(key = "next_prayer") {
-                NextPrayerText(nextPray = uiState.nextPray)
+            if (uiState.isLoading) {
+                LoadingOverlay()
             }
-
-            item(key = "countdown") {
-                CountdownDisplay(countdownText = countdownText)
-            }
-
-            item(key = "divider") {
-                Divider()
-            }
-
-            item(key = "current_date") {
-                CurrentDateText(currentDate = uiState.currentDate)
-            }
-
-            items(
-                items = prayerRows,
-                key = { row -> row.first().id }
-            ) { row ->
-                PrayerRow(prayers = row)
-            }
-        }
-
-        if (uiState.isLoading) {
-            LoadingOverlay()
         }
     }
 }

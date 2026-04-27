@@ -23,10 +23,15 @@ import androidx.wear.compose.foundation.lazy.rememberScalingLazyListState
 import androidx.wear.compose.material.Chip
 import androidx.wear.compose.material.ChipDefaults
 import androidx.wear.compose.material.MaterialTheme
+import androidx.wear.compose.material.PositionIndicator
+import androidx.wear.compose.material.Scaffold
 import androidx.wear.compose.material.Switch
 import androidx.wear.compose.material.SwitchDefaults
 import androidx.wear.compose.material.Text
+import androidx.wear.compose.material.TimeText
 import androidx.wear.compose.material.ToggleChip
+import androidx.wear.compose.material.Vignette
+import androidx.wear.compose.material.VignettePosition
 import androidx.wear.compose.ui.tooling.preview.WearPreviewDevices
 import com.mbf.jordan_prayer_times_app.data.ui.CityUiModel
 import com.mbf.jordan_prayer_times_app.presentation.LocalAppSharedState
@@ -51,55 +56,60 @@ fun SettingsScreen(onNavigateBack: () -> Unit) {
         }
     }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colors.background)
+    Scaffold(
+        timeText = { TimeText() },
+        vignette = { Vignette(vignettePosition = VignettePosition.TopAndBottom) },
+        positionIndicator = { PositionIndicator(scalingLazyListState = listState) }
     ) {
-        ScalingLazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            state = listState
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colors.background)
         ) {
-            item(key = "notifications_toggle") {
-                NotificationToggle(
-                    notificationsEnabled = uiState.notificationsEnabled,
-                    onToggle = { enabled ->
-                        viewModel.actionTrigger(
-                            SettingsViewModel.UIAction.ToggleNotifications(enabled)
-                        )
-                    }
-                )
+            ScalingLazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                state = listState
+            ) {
+                item(key = "notifications_toggle") {
+                    NotificationToggle(
+                        notificationsEnabled = uiState.notificationsEnabled,
+                        onToggle = { enabled ->
+                            viewModel.actionTrigger(
+                                SettingsViewModel.UIAction.ToggleNotifications(enabled)
+                            )
+                        }
+                    )
+                }
+
+                item(key = "divider") {
+                    SettingsDivider()
+                }
+
+                item(key = "cities_header") {
+                    Text(
+                        text = "المدن",
+                        style = MaterialTheme.typography.title3
+                    )
+                }
+
+                items(
+                    items = uiState.cities,
+                    key = { city -> city.id }
+                ) { city ->
+                    CityChip(
+                        city = city,
+                        isSelected = city.id == uiState.selectedCity?.id,
+                        onCitySelected = {
+                            viewModel.actionTrigger(SettingsViewModel.UIAction.SelectCity(city))
+                            mainViewModel?.actionTrigger(MainViewModel.UIAction.SelectCity(city))
+                        }
+                    )
+                }
             }
 
-            item(key = "divider") {
-                SettingsDivider()
+            if (uiState.isLoading || mainUiState.isLoading) {
+                LoadingOverlay()
             }
-
-            item(key = "cities_header") {
-                Text(
-                    text = "المدن",
-                    style = MaterialTheme.typography.title3
-                )
-            }
-
-            items(
-                items = uiState.cities,
-                key = { city -> city.id }
-            ) { city ->
-                CityChip(
-                    city = city,
-                    isSelected = city.id == uiState.selectedCity?.id,
-                    onCitySelected = {
-                        viewModel.actionTrigger(SettingsViewModel.UIAction.SelectCity(city))
-                        mainViewModel?.actionTrigger(MainViewModel.UIAction.SelectCity(city))
-                    }
-                )
-            }
-        }
-
-        // Show overlay while cities are loading OR while prayer times are being fetched
-        if (uiState.isLoading || mainUiState.isLoading) {
-            LoadingOverlay()
         }
     }
 }

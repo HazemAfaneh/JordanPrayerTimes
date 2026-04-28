@@ -31,7 +31,7 @@ android {
         applicationId = "com.mbf.jordan_prayer_times_app"
         minSdk = 30
         targetSdk = 34
-        versionCode = 13
+        versionCode = 14
         versionName = "2.3.0"
         buildConfigField("String", "GITHUB_TOKEN", "\"${localProps.getProperty("github_token", "")}\"")
     }

@@ -1,33 +1,56 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-    id ("kotlin-kapt")
-    id ("dagger.hilt.android.plugin")
+    kotlin("plugin.serialization") version "2.0.0"
+}
 
-
+val localProps = Properties().apply {
+    rootProject.file("local.properties").takeIf { it.exists() }?.inputStream()?.use { load(it) }
 }
 
 android {
-    namespace = "com.mbf.wearable.jordanprayertimes"
+    namespace = "com.mbf.jordan_prayer_times_app"
     compileSdk = 34
 
+    signingConfigs {
+        create("release") {
+            val props = Properties().apply {
+                rootProject.file("key.properties").takeIf { it.exists() }?.inputStream()?.use { load(it) }
+            }
+            storeFile = file(props.getProperty("storeFile", ""))
+            storePassword = props.getProperty("storePassword", "")
+            keyAlias = props.getProperty("keyAlias", "")
+            keyPassword = props.getProperty("keyPassword", "")
+        }
+    }
+
     defaultConfig {
-        applicationId = "com.mbf.wearable.jordanprayertimes"
+        applicationId = "com.mbf.jordan_prayer_times_app"
         minSdk = 30
         targetSdk = 34
-        versionCode = 1
-        versionName = "1.0"
-
+        versionCode = 14
+        versionName = "2.3.0"
+        buildConfigField("String", "GITHUB_TOKEN", "\"${localProps.getProperty("github_token", "")}\"")
     }
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            signingConfig = signingConfigs.getByName("release")
+        }
+        // Use this variant for profiling on real hardware — release perf, debuggable
+        create("benchmark") {
+            initWith(getByName("release"))
+            isDebuggable = true
+            signingConfig = signingConfigs.getByName("debug")
         }
     }
     compileOptions {
@@ -39,6 +62,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
@@ -62,10 +86,18 @@ dependencies {
     implementation(libs.horologist.compose.tools)
     implementation(libs.horologist.tiles)
     implementation(libs.watchface.complications.data.source.ktx)
-    implementation ("com.google.dagger:hilt-android:2.46.1")
-    kapt ("com.google.dagger:hilt-android-compiler:2.46.1")
-    kapt ("androidx.hilt:hilt-compiler:1.0.0")
-    implementation ("androidx.hilt:hilt-navigation-compose:1.0.0")
+
+    implementation("io.insert-koin:koin-android:4.0.0")
+    implementation("io.insert-koin:koin-androidx-compose:4.0.0")
+    implementation("io.insert-koin:koin-core:4.0.0")
+
+    implementation("io.ktor:ktor-client-okhttp:2.3.7")
+    implementation("io.ktor:ktor-client-core:2.3.7")
+    implementation("io.ktor:ktor-client-content-negotiation:2.3.7")
+    implementation("io.ktor:ktor-client-logging:2.3.7")
+    implementation("io.ktor:ktor-serialization-kotlinx-json:2.3.7")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.2")
+    implementation("androidx.work:work-runtime-ktx:2.9.1")
 
     androidTestImplementation(platform(libs.compose.bom))
     androidTestImplementation(libs.ui.test.junit4)

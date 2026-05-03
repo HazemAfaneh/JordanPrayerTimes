@@ -1,8 +1,11 @@
 package com.mbf.jordan_prayer_times_app.notification
 
 import android.content.BroadcastReceiver
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import androidx.wear.watchface.complications.datasource.ComplicationDataSourceUpdateRequester
+import com.mbf.jordan_prayer_times_app.complication.MainComplicationService
 import com.mbf.jordan_prayer_times_app.data.local.CityPreferences
 
 class PrayerAlarmReceiver : BroadcastReceiver() {
@@ -12,6 +15,9 @@ class PrayerAlarmReceiver : BroadcastReceiver() {
         val prayerName = intent.getStringExtra(EXTRA_PRAYER_NAME) ?: return
         val notificationId = intent.getIntExtra(EXTRA_NOTIFICATION_ID, 0)
         NotificationHelper(context).showPrayerNotification(prayerName, notificationId)
+        ComplicationDataSourceUpdateRequester
+            .create(context, ComponentName(context, MainComplicationService::class.java))
+            .requestUpdateAll()
     }
 
     companion object {

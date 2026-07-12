@@ -7,8 +7,9 @@ plugins {
     kotlin("plugin.serialization") version "2.0.0"
 }
 
-val localProps = Properties().apply {
-    rootProject.file("local.properties").takeIf { it.exists() }?.inputStream()?.use { load(it) }
+// Secrets live only in .env (git-ignored). Never in gradle.properties / local.properties.
+val envProps = Properties().apply {
+    rootProject.file(".env").takeIf { it.exists() }?.inputStream()?.use { load(it) }
 }
 
 android {
@@ -31,9 +32,9 @@ android {
         applicationId = "com.mbf.jordan_prayer_times_app"
         minSdk = 30
         targetSdk = 34
-        versionCode = 19
-        versionName = "2.3.2"
-        buildConfigField("String", "GITHUB_TOKEN", "\"${localProps.getProperty("github_token", "")}\"")
+        versionCode = 21
+        versionName = "2.3.3"
+        buildConfigField("String", "GITHUB_TOKEN", "\"${envProps.getProperty("GITHUB_TOKEN", "")}\"")
     }
 
     buildTypes {

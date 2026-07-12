@@ -16,3 +16,8 @@ local.properties
 /.idea/ChatHistory_schema_v3.xml
 key.properties
 gradle.properties
+# secrets
+.env
+
+# release bundles (contain baked secrets) — never commit
+*.aab

@@ -14,7 +14,8 @@ val envProps = Properties().apply {
 
 android {
     namespace = "com.mbf.jordan_prayer_times_app"
-    compileSdk = 34
+    // Play requires Wear OS apps to target API 35+ from Aug 31, 2026
+    compileSdk = 35
 
     signingConfigs {
         create("release") {
@@ -31,9 +32,9 @@ android {
     defaultConfig {
         applicationId = "com.mbf.jordan_prayer_times_app"
         minSdk = 30
-        targetSdk = 34
-        versionCode = 21
-        versionName = "2.3.3"
+        targetSdk = 35
+        versionCode = 23
+        versionName = "2.6.0"
         buildConfigField("String", "GITHUB_TOKEN", "\"${envProps.getProperty("GITHUB_TOKEN", "")}\"")
     }
 

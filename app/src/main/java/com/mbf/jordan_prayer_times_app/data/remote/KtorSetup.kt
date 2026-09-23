@@ -10,6 +10,7 @@ import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.request.header
+import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.kotlinx.json.json
@@ -22,8 +23,7 @@ import java.util.concurrent.TimeUnit
  * Uses OkHttp engine for better Android compatibility
  */
 class KtorSetup(
-    private val enableLogging: Boolean = true,
-    private val githubToken: String = NetworkConfig.GITHUB_TOKEN
+    private val enableLogging: Boolean = true
 ) {
     companion object {
         private const val TAG = "KtorSetup"
@@ -46,15 +46,17 @@ class KtorSetup(
 
             // JSON Content Negotiation
             install(ContentNegotiation) {
-                json(
-                    Json {
-                        ignoreUnknownKeys = true
-                        isLenient = true
-                        prettyPrint = enableLogging
-                        encodeDefaults = true
-                        coerceInputValues = true
-                    }
-                )
+                val jsonConfig = Json {
+                    ignoreUnknownKeys = true
+                    isLenient = true
+                    prettyPrint = enableLogging
+                    encodeDefaults = true
+                    coerceInputValues = true
+                }
+                json(jsonConfig)
+                // raw.githubusercontent.com serves the data files as text/plain, which the
+                // default (application/json only) converter would refuse to decode.
+                json(jsonConfig, contentType = ContentType.Text.Plain)
             }
 
             // Logging Plugin

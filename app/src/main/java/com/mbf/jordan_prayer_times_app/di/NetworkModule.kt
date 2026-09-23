@@ -22,8 +22,7 @@ val networkModule = module {
      */
     single {
         KtorSetup(
-            enableLogging = true, // Enable logging for debugging
-            githubToken = NetworkConfig.GITHUB_TOKEN
+            enableLogging = true // Enable logging for debugging
         )
     }
 

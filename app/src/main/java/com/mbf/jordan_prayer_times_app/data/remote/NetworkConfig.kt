@@ -1,18 +1,15 @@
 package com.mbf.jordan_prayer_times_app.data.remote
 
-import com.mbf.jordan_prayer_times_app.BuildConfig
-
 /**
  * Network configuration constants
  * Centralized location for all API-related configuration
  */
 object NetworkConfig {
-    /**
-     * GitHub Personal Access Token.
-     * Single source of truth: injected from .env via BuildConfig.GITHUB_TOKEN.
-     * Never hardcode the token here — keep secrets in .env only (git-ignored).
+    /*
+     * No token: the data repository is public and read from raw.githubusercontent.com.
+     * A token built into the app was revoked by GitHub secret scanning once a build
+     * containing it was pushed, so the apps no longer carry one.
      */
-    val GITHUB_TOKEN: String = BuildConfig.GITHUB_TOKEN
 
     /**
      * Base URL for GitHub API

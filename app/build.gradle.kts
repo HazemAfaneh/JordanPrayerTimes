@@ -33,8 +33,8 @@ android {
         applicationId = "com.mbf.jordan_prayer_times_app"
         minSdk = 30
         targetSdk = 35
-        versionCode = 29
-        versionName = "2.6.0"
+        versionCode = 31
+        versionName = "3.0.0"
     }
 
     buildTypes {

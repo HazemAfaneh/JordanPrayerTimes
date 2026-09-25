@@ -2,6 +2,7 @@ package com.mbf.jordan_prayer_times_app.presentation.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -68,7 +69,8 @@ fun SettingsScreen(onNavigateBack: () -> Unit) {
         ) {
             ScalingLazyColumn(
                 modifier = Modifier.fillMaxSize(),
-                state = listState
+                state = listState,
+                contentPadding = PaddingValues(horizontal = ROUND_SCREEN_PADDING, vertical = 24.dp)
             ) {
                 item(key = "notifications_toggle") {
                     NotificationToggle(
@@ -137,9 +139,7 @@ private fun NotificationToggle(
                 )
             )
         },
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 8.dp)
+        modifier = Modifier.fillMaxWidth()
     )
 }
 
@@ -165,7 +165,8 @@ private fun CityChip(
         label = {
             Text(
                 text = city.name,
-                maxLines = 1,
+                // Two lines, so long area names stay readable at large font sizes.
+                maxLines = 2,
                 overflow = TextOverflow.Ellipsis
             )
         },

@@ -11,14 +11,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
@@ -46,7 +45,8 @@ fun MainScreen(onScreenNavigation: () -> Unit) {
     val countdownText by viewModel.countdownFlow.collectAsStateWithLifecycle()
     val listState = rememberScalingLazyListState()
 
-    val prayerRows = remember(uiState.prayers) { uiState.prayers.chunked(3) }
+    // Two per row: three no longer fit a small round screen once the user enlarges the font.
+    val prayerRows = remember(uiState.prayers) { uiState.prayers.chunked(2) }
 
     Scaffold(
         timeText = { TimeText() },
@@ -63,6 +63,9 @@ fun MainScreen(onScreenNavigation: () -> Unit) {
                 modifier = Modifier.fillMaxSize(),
                 state = listState,
                 horizontalAlignment = Alignment.CenterHorizontally,
+                // Round screens are narrowest at the top and bottom: keep text off the edges at
+                // any system font size (Wear app quality, "Wear font size").
+                contentPadding = PaddingValues(horizontal = ROUND_SCREEN_PADDING, vertical = 24.dp),
             ) {
                 item(key = "city_header") {
                     CityHeader(
@@ -113,7 +116,8 @@ private fun CityHeader(
         color = Color.White,
         textAlign = TextAlign.Center,
         modifier = Modifier
-            .padding(vertical = 8.dp)
+            .fillMaxWidth()
+            .padding(horizontal = 8.dp, vertical = 8.dp)
             .clickable { onScreenNavigation() }
     )
 }
@@ -125,7 +129,8 @@ private fun NextPrayerText(nextPray: String) {
         text = "التالي: $nextPray",
         style = MaterialTheme.typography.body1,
         color = Color.Gray,
-        modifier = Modifier.padding(bottom = 2.dp)
+        textAlign = TextAlign.Center,
+        modifier = Modifier.fillMaxWidth().padding(bottom = 2.dp)
     )
 }
 
@@ -136,7 +141,8 @@ private fun CountdownDisplay(countdownText: String) {
         text = countdownText,
         style = MaterialTheme.typography.body1,
         color = Color.White,
-        modifier = Modifier.padding(bottom = 12.dp)
+        textAlign = TextAlign.Center,
+        modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp)
     )
 }
 
@@ -155,7 +161,9 @@ private fun CurrentDateText(currentDate: String) {
     Text(
         text = currentDate,
         style = MaterialTheme.typography.body2,
-        color = Color.White
+        color = Color.White,
+        textAlign = TextAlign.Center,
+        modifier = Modifier.fillMaxWidth()
     )
 }
 
@@ -167,7 +175,10 @@ private fun PrayerRow(prayers: List<PrayerUiModel>) {
         horizontalArrangement = Arrangement.Center,
     ) {
         prayers.forEach { prayer ->
-            Box(modifier = Modifier.padding(horizontal = 8.dp)) {
+            Box(
+                modifier = Modifier.weight(1f).padding(horizontal = 4.dp),
+                contentAlignment = Alignment.Center
+            ) {
                 CircularItem(prayer = prayer)
             }
         }
@@ -176,12 +187,11 @@ private fun PrayerRow(prayers: List<PrayerUiModel>) {
 
 @Composable
 private fun CircularItem(prayer: PrayerUiModel) {
+    // Grows with the text instead of a fixed 55dp circle, which clipped large fonts.
     Box(
         modifier = Modifier
-            .size(55.dp)
-            .clip(CircleShape)
-            .background(Color.Transparent)
-            .padding(8.dp),
+            .defaultMinSize(minWidth = 55.dp, minHeight = 55.dp)
+            .padding(vertical = 4.dp),
         contentAlignment = Alignment.Center
     ) {
         Column(
@@ -190,6 +200,7 @@ private fun CircularItem(prayer: PrayerUiModel) {
         ) {
             Text(
                 text = prayer.name,
+                textAlign = TextAlign.Center,
                 style = TextStyle(
                     fontSize = 10.sp,
                     color = Color.White
@@ -198,6 +209,7 @@ private fun CircularItem(prayer: PrayerUiModel) {
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = prayer.prayerTime.to12hFormat(),
+                textAlign = TextAlign.Center,
                 style = TextStyle(
                     fontSize = 9.sp,
                     color = Color.White
@@ -206,3 +218,6 @@ private fun CircularItem(prayer: PrayerUiModel) {
         }
     }
 }
+
+/** Horizontal inset for list content on round screens (about 12% of a small watch's width). */
+internal val ROUND_SCREEN_PADDING = 22.dp
